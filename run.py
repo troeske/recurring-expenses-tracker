@@ -61,20 +61,21 @@ def validate_email(email):
 def create_worksheet(user_email):
     """
     Create a new worksheet for the user and share it with the user and RET
+    Note: RET is owner and the user is editor. Later versions should make user owner
     """
+
     print("\nRET is creating a new worksheet for you...")
     try:
         SHEET = GSPREAD_CLIENT.create(SHEET_NAME)
         SHEET.share(user_email, perm_type='user', role='writer')
-        #SHEET.share('ret-admin@myrecurringexpensetracker.iam.gserviceaccount.com', perm_type='user', role='owner')
 
     except Exception as e:
         print(f"An error occurred: {e}")
         print("Please try again later.")
         return
     
-    print("Worksheet created successfully!")
-    print("You can access your worksheet at the following link:")
+    print("Worksheet created successfully!\n")
+    print("You can access your worksheet at the following link:\n")
     print(SHEET.url)
 
 
