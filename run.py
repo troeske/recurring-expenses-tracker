@@ -80,6 +80,8 @@ def create_spreadsheet(user_email):
 
     except Exception as e:
         print(f"An error occurred: {e}")
+        #from https://docs.python.org/3/tutorial/errors.html:
+        print(type(e))    # the exception type
         print("Please try again later.")
         return False
     
@@ -134,8 +136,8 @@ def open_existing_spreadsheet(existing_ssheet):
         print(f"\nRET does not have permission to access this spreadsheet. \
                 \nYou can add RET as an editor to the spreadsheet.\
                 \nClick Share on the upper right corner of the Google Sheet and add:\
-                \n{CREDS.service_account_email}\
-                \nThen try again.")
+                \n\n{CREDS.service_account_email}\
+                \n\nThen try again.")
         return False
 
     except Exception as e:
@@ -210,7 +212,13 @@ def select_imported_csv_wsheet(spreadsheet, ws_name):
     except gspread.exceptions.WorksheetNotFound as e:
         print(f"\nRET couldn't find your worksheet: {e}")
         return False
-
+ 
+    except Exception as e:
+        print(f"\nUnexpected  error occurred: \n")
+        #from https://docs.python.org/3/tutorial/errors.html:
+        print(type(e))    # the exception type
+        return False
+    
     return worksheet
 
 
