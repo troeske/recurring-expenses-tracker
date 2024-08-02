@@ -1,7 +1,8 @@
 import gspread
 from gspread.exceptions import SpreadsheetNotFound, GSpreadException, APIError
 from google.oauth2.service_account import Credentials
-import re
+from datetime import datetime
+
 
 # love sandwiches example used as baseline
 SCOPE = [
@@ -293,7 +294,7 @@ def import_raw_data(raw_data_wsheet):
     
     #now the columns for tx_date, tx_merchant, and tx_amount
     #let's start with the transaction date column
-    message= "\nPlease enter the column letter where the transaction date is located \n(e.g. A, B, C, etc.):\n"
+    message= "\nPlease enter the column letter where the \ntransaction date is located \n(e.g. A, B, C, etc.):\n"
     tx_date_col = column_letter_to_number(input(message))
     while not tx_date_col:
         tx_date_col = column_letter_to_number(input(message))
@@ -311,7 +312,7 @@ def import_raw_data(raw_data_wsheet):
     tx_merchant_col -= 1
 
     # now the amount column
-    message= "\nPlease enter the column letter where the transaction amount \nis located (e.g. A, B, C, etc.):\n"
+    message= "\nPlease enter the column letter where the \ntransaction amount is located (e.g. A, B, C, etc.):\n"
     tx_amount_col = column_letter_to_number(input(message))
     while not tx_amount_col:
         tx_amount_col = column_letter_to_number(input(message))
@@ -330,12 +331,12 @@ def import_raw_data(raw_data_wsheet):
     selected_tx_data = []
 
     for i in range(int(start_row)-1, len(raw_tx_data)):
-        new_row = [{
+        new_row = {
                     ROW_KEY: i, 
                     TX_DATE_KEY: raw_tx_data[i][tx_date_col], 
                     TX_MERCHANT_KEY: raw_tx_data[i][tx_merchant_col],
                     TX_AMOUNT_KEY: raw_tx_data[i][tx_amount_col] 
-                    }]  
+                    } 
 
         #print(new_row)
         selected_tx_data.append(new_row)
@@ -352,6 +353,58 @@ def do_you_want_to_continue(message):
         return True
     else:
         return False
+    
+def sort_key(d):
+    """
+    Return the key for sorting the data
+    """
+    return (d['tx_merchant'], datetime.strptime(d['tx_date'], '%d.%m.%Y'))
+    
+class TxData:
+    """
+    Class to handle all aspects of the transaction data incl: clean_up and analysis
+    Input: list of dictionaries: selected_raw_tx_data
+    Return: Class object
+    """
+
+    def __init__(self, selected_raw_tx_data, ROW_KEY, TX_DATE_KEY, TX_MERCHANT_KEY, TX_AMOUNT_KEY):
+        self.selected_raw_tx_data = selected_raw_tx_data
+        self.ROW_KEY = ROW_KEY
+        self.TX_DATE_KEY = TX_DATE_KEY
+        self.TX_MERCHANT_KEY = TX_MERCHANT_KEY
+        self.TX_AMOUNT_KEY = TX_AMOUNT_KEY
+
+        self.sorted_selected_raw_data = []
+    
+    def sort_data(self):
+        """
+        Sort the transaction data
+        Creates sorted_selected_raw_tx_data
+        """
+        #sort the data by merchant and date, learned from GeeksforGeeks
+        self.sorted_selected_raw_data = sorted(
+            self.selected_raw_tx_data,
+            key=lambda x: (x[TX_MERCHANT_KEY], x[TX_DATE_KEY])
+            )
+
+        
+    def print_data(self, number_of_rows, sorted):
+        """
+        Print the first number_of_rows of the transaction data
+        If sorted use the sorted data, otherwise use the selected_raw_data
+        """
+        for i in range(number_of_rows):
+            if sorted:
+                print(self.sorted_selected_raw_data[i])
+            elif not sorted:
+                print(self.selected_raw_tx_data[i])
+
+
+    def analyze_data(self):
+        """
+        Analyze the transaction data
+        """
+
 
 def main():
     """
@@ -382,18 +435,26 @@ def main():
     print(f"Great! RET connected to your Google Worksheet: {RAW_DATA_WSHEET.title}.\n")
 
     #import raw transaction data from the worksheet
+    selected_raw_tx_data = []
     selected_raw_tx_data = import_raw_data(RAW_DATA_WSHEET)
     print("The raw transaction data has been successfully imported.\n")
+    
+    #let's start the data analysis
+    #instantiate the class
+    tx_data = TxData(selected_raw_tx_data, ROW_KEY, TX_DATE_KEY, TX_MERCHANT_KEY, TX_AMOUNT_KEY)
+    
     print("Here are the first 5 records:\n")
-    print(selected_raw_tx_data[:10])
+    tx_data.print_data(5, False)
     
     message = "\nDoes the data look right and doyou want to continue? (y/n):\n"
     if not do_you_want_to_continue(message):
         print("Goodbye!")
         return
     
-    #let's start the data analysis
-    
+    #sort the raw data
+    tx_data.sort_data()
+    tx_data.print_data(50, True)
+
 
 
 
