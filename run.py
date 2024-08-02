@@ -14,6 +14,7 @@ CREDS = Credentials.from_service_account_file('creds.json')
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET_NAME = 'Recurring Expense Tracker'
+MAX_COL_NUMBER = 50
 
 
 def intro_go_on():
@@ -139,7 +140,8 @@ def open_existing_spreadsheet(existing_ssheet):
                 \nYou can add RET as an editor to the spreadsheet.\
                 \nClick Share on the upper right corner of the Google Sheet and add:\
                 \n\n{CREDS.service_account_email}\
-                \n\nThen try again.")
+                \n\nPlease select 'Editor' and uncheck: 'Notify people'\
+                \nThen try again.")
         return False
 
     except Exception as e:
@@ -177,7 +179,7 @@ def continue_RET():
 
 def get_imported_csv_wsheet(spreadsheet):
     """
-    handles the import prompting of the user to import  the CSV file to the Google Sheet
+    prompts the user to import  the CSV file to a Google Worksheet and privde it's name
     returns: the worksheet that the user imported the CSV file to
     """
     print(f"\nNow, please imnport your CSV file to the Google Sheet: '{spreadsheet.title}' RET just created or opened.")
@@ -186,7 +188,7 @@ def get_imported_csv_wsheet(spreadsheet):
     wait_for_user("Have you imported the CSV file to the Google Sheet? (y/n): ")
 
     ws_name = input("Please enter the worksheet name where you imported the CSV file. \
-    \nYou can do this by double-clicking on the Sheet Name in footer of the Spreadsheet\n")
+    \nYou can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet\n")
     
     #loop as long user entered empty string
     while ws_name =="":
@@ -223,6 +225,113 @@ def select_imported_csv_wsheet(spreadsheet, ws_name):
     
     return worksheet
 
+def get_int(message):
+    """
+    Check if the value is an integer
+    """
+    try:
+        int_value = int(input(message))
+    
+    except ValueError:
+        int_value = input(message)
+        return Fales
+
+    return int_value
+
+def column_letter_to_number(column_letter):
+    """
+    Convert a spreadsheet column letter (e.g., 'A', 'B', 'Q') to its respective number value.
+    Supports multi-letter columns (e.g., 'AA', 'AB').
+    Returns: list of selected columns as numbers. Calling function must subtract 1 to get zero-based index.
+    """
+
+    #let's check if column_letter already is an integer
+    try:
+        column_number = int(column_letter)
+    
+    except ValueError:
+        #Provided by Copilot:
+        print("Converting column letter to number")
+        column_letter = column_letter.upper()
+        column_number = 0
+        for char in column_letter:
+            column_number = column_number * 26 + (ord(char) - ord('A') + 1)
+
+    #let's make some some common sense checking in the value could right 
+    try:
+        if column_number < 1:
+            print(f"The column number is {str(column_number)}. It cannot be less than 1.")
+            return False
+        elif column_number > MAX_COL_NUMBER:
+            print("The column number is {str(column_number)}. It cannot be higher then 50")
+            return False
+        else:
+            print(f"Column Number is: {str(column_number)}.")
+            return column_number
+    
+    except Exception as e:
+        print(f"\nUnexpected  error occurred: \n")
+        #from https://docs.python.org/3/tutorial/errors.html:
+        print(type(e))    # the exception type
+        return False
+
+def import_raw_data(raw_data_wsheet):
+    """
+    Import the raw transaction data from the worksheet where the user imported his/her CSV file into a list of lists
+    Return: the list of lists with the raw transaction data 
+    """
+
+    #let's start with the row where the transaction data starts
+    input_message = "\nPlease enter the row number \nwhere the transaction data starts (e.g. 1, 2, 3, etc.):\n"
+    start_row = get_int(input_message)
+    while not start_row:
+        start_row = get_int(input_message)
+    print(start_row)
+    
+    #now the columns for tx_date, tx_merchant, and tx_amount
+    #let's start with the transaction date column
+    message= "\nPlease enter the column letter where the transaction date is located \n(e.g. A, B, C, etc.):\n"
+    tx_date_col = column_letter_to_number(input(message))
+    while not tx_date_col:
+        tx_date_col = column_letter_to_number(input(message))
+    
+    #we need to subtract 1 to get the zero-based index
+    tx_date_col -= 1
+    print(tx_date_col)
+
+    #now the merchant column
+    message= "\nPlease enter the column letter where the \nmerchant/recipient is located (e.g. A, B, C, etc.):\n"
+    tx_merchant_col = column_letter_to_number(input(message))
+    while not tx_merchant_col:
+        tx_merchant_col = column_letter_to_number(input(message))
+    
+    #we need to subtract 1 to get the zero-based index
+    tx_merchant_col -= 1
+    print(tx_merchant_col)
+
+    # now the amount column
+    message= "\nPlease enter the column letter where the transaction amount \nis located (e.g. A, B, C, etc.):\n"
+    tx_amount_col = column_letter_to_number(input(message))
+    while not tx_amount_col:
+        tx_amount_col = column_letter_to_number(input(message))
+     
+    #we need to subtract 1 to get the zero-based index
+    tx_amount_col -= 1
+    print(tx_amount_col)
+
+
+    print(f"\nTHANK YOU! RET is now importing your raw transaction data from the worksheet: {raw_data_wsheet.title}.\n")
+    print("This may take a few seconds depending on the size of the data.\n")
+    print("Please wait...\n")
+
+    raw_tx_data = raw_data_wsheet.get_all_values()
+    
+    #we need to loop through the list of lists and extract the rows and columns that the user specified
+    for i in range(int(start_row)-1, len(raw_tx_data)):
+        print(f"Row: {i} | TX-Date: {raw_tx_data[i][tx_date_col]} | TX-Merchant: {raw_tx_data[i][tx_merchant_col]} | TX-Amount: {raw_tx_data[i][tx_amount_col]} \n")
+
+    return raw_tx_data
+
 
 def main():
     """
@@ -249,8 +358,13 @@ def main():
 
     
     # regardless if user created a new sheet or re-used on, we  we are now ready to ask the user to import the CSV file    
-    IMPORT_W_SHEET = get_imported_csv_wsheet(SHEET)
-    print(f"Great! You have successfully imported the CSV file to the Google Sheet: {IMPORT_W_SHEET.title}.\n")
-    
+    RAW_DATA_WSHEET = get_imported_csv_wsheet(SHEET)
+    print(f"Great! RET connected to your Google Worksheet: {RAW_DATA_WSHEET.title}.\n")
+
+    #import raw transaction data from the worksheet
+    raw_tx_data = import_raw_data(RAW_DATA_WSHEET)
+    #print("The raw transaction data has been successfully imported.\n")
+    #print("Here are the first 5 records:\n")
+    #print(raw_tx_data[:10])
 
 main()
