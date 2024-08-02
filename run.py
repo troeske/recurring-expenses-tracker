@@ -25,12 +25,19 @@ def intro_go_on():
     print("This program will sort through all the transaction data and provide you with")
     print("a list of recurring expenses and subscriptions.\n")
     print("To provide an platform for you to manage your recurring expenses,")
-    print("the RET will use Google Sheets to import your CSV files and store the data.\n")
+    print("the RET will use Google Sheets to import your CSV files and provide the output for you as well.\n")
     print("Let's get started!\n\n")
 
-    go_on = input("Do you want to continue? Press Enter to continue; anything else to abort:\n")
-    if go_on == "":
-        return True
+    go_on = input("Do you want to continue? \
+                  \nPress: \
+                  \n1 to create a new Spreadsheet \
+                  \n2 for re-using one previsously created through RET \
+                  \n\nAny other key to EXIT:\n")
+
+    if go_on == "1":
+        return 1
+    elif go_on == "2":
+        return 2
     else:
         return False
 
@@ -83,13 +90,20 @@ def main():
     """
     Run the main program
     """
-    if not intro_go_on():
+    mode = intro_go_on()
+
+    if not mode:
         print("Goodbye!")
         return
-    
-    user_email = get_user_email()
-    print(user_email)
+    elif mode == 1:    
+        user_email = get_user_email()
+        print(user_email)
 
-    create_worksheet(user_email)
+        create_worksheet(user_email)
+    elif mode == 2:
+        print("This feature is not available yet. Please try again later.")
+        return
+        
+    
 
 main()
