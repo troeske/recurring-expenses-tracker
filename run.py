@@ -99,7 +99,7 @@ def open_existing_worksheet():
         SHEET = GSPREAD_CLIENT.open_by_url(existing_ws.strip())
 
     except Exception as e:
-        print(f"\nAn error occurred: {e}")
+        print(f"\nThe following error occurred: {e}")
         return False
     
     print(f"\nSuccessfully accessed Google Sheet: {SHEET.title}\n")
@@ -110,13 +110,49 @@ def wait_for_user(display_text):
     display text with y/n option
     Wait for the user until he/she presses 'y' 
     """
-    imported = input(f"\n{display_text}")
+    response = input(f"\n{display_text}")
 
-    while imported == "n":
-        imported = input(f"{display_text}")
+    while response == "n":
+        response = input(f"{display_text}")
     
     print("\nGreat! Let's move on to the next step.\n")
 
+def continue_RET():
+    """
+    ask user if she/he wants to continue or exit the program
+    """
+    response = input("\nDo you want to continue with this Recurring Expense Tracker? (y/n): ")
+    if response == "y":
+        return True
+    else:
+        print("Goodbye!")
+        return False
+    
+
+def get_imported_csv_wsheet():
+    """
+    handles the import prompting of the user to import  the CSV file to the Google Sheet
+    returns: the worksheet that the user imported the CSV file to
+    """
+    print(f"Now, please imnport your CSV file to the Google Sheet: '{SHEET.title}' just created or opened.")
+    print("You can do this by clicking on the 'File' menu in the Google Sheet and selecting 'Import'.")
+    
+    wait_for_user("Have you imported the CSV file to the Google Sheet? (y/n): ")
+
+    ws_name = input("Please enter the worksheet name where you imported the CSV file: ")
+    
+    while ws_name =="":
+        ws_name = input("Please enter the worksheet name where you imported the CSV file: ")
+    
+    try:
+        worksheet = SHEET.worksheet(ws_name)
+
+    except Exception as e:
+        print(f"\nThe following error occurred: {e}")
+        return False
+    
+
+    return worksheet
 
 def main():
     """
@@ -137,10 +173,15 @@ def main():
     elif mode == 2:
         while not open_existing_worksheet():
             print("The URL you entered is not a valid Google Sheet. Please try again.\n")
-        
-    print(f"Now, please imnport your CSV file to the Google Sheet: '{SHEET.title}' just created or opened.")
-    print("You can do this by clicking on the 'File' menu in the Google Sheet and selecting 'Import'.")
     
-    wait_for_user("Have you imported the CSV file to the Google Sheet? (y/n): ")
+    # regardless if user created a new sheet or re-used on, we  we are now ready to ask the user to import the CSV file    
+    IMPORT_W_SHEET = get_imported_csv_wsheet()
+    if not IMPORT_W_SHEET:
+        if not continue_RET(): return  
+        
+        IMPORT_W_SHEET = get_imported_csv_wsheet()
+    else:
+        print(f"Great! You have successfully imported the CSV file to the Google Sheet: {IMPORT_W_SHEET.title}.\n")
+    
 
 main()
