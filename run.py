@@ -2,6 +2,7 @@ import gspread
 from gspread.exceptions import SpreadsheetNotFound, GSpreadException, APIError
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+from dateutil import parse
 
 
 # love sandwiches example used as baseline
@@ -373,6 +374,35 @@ class TxData:
         self.selected_raw_tx_data = selected_raw_tx_data
 
         self.sorted_selected_raw_data = []
+        clean_tx_data = []
+    
+    def clean_up_tx_data(self):
+        """
+        clean up each value row by row coverting date and value as needed
+        Return: clean_tx_data
+        """
+
+        for i in range(len(self.selected_raw_tx_data)):
+            #clean up the date
+            
+            self.clean_tx_data[i][TX_DATE_KEY]
+            
+            try:
+                self.selected_raw_tx_data[i][TX_DATE_KEY] = datetime.strptime(self.selected_raw_tx_data[i][TX_DATE_KEY], '%d.%m.%Y')
+            except ValueError:
+                print(f"Error in row {self.selected_raw_tx_data[i][ROW_KEY]}. The date {self.selected_raw_tx_data[i][TX_DATE_KEY]} is not in the right format.")
+                self.selected_raw_tx_data[i][TX_DATE_KEY] = None
+
+            #clean up the amount
+            try:
+                self.selected_raw_tx_data[i][TX_AMOUNT_KEY] = float(self.selected_raw_tx_data[i][TX_AMOUNT_KEY].replace(",", ""))
+            except ValueError:
+                print(f"Error in row {self.selected_raw_tx_data[i][ROW_KEY]}. The amount {self.selected_raw_tx_data[i][TX_AMOUNT_KEY]} is not in the right format.")
+                self.selected_raw_tx_data[i][TX_AMOUNT_KEY] = None
+
+
+
+
     
     def sort_data(self):
         """
@@ -448,10 +478,13 @@ def main():
     if not do_you_want_to_continue(message):
         print("Goodbye!")
         return
-    
+    #clean up the tx data row by row
+    tx_data.clean_up_tx_data()
+
+
     #sort the raw data
     tx_data.sort_data()
-    tx_data.print_data(50, True)
+    #tx_data.print_data(5, True)
 
 
 
