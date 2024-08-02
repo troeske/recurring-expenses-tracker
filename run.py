@@ -20,15 +20,16 @@ def intro_go_on():
     """
     Display the intro message
     """
-    print("\nWelcome to the Recurring Expense Tracker - RET!\n")
-    print("This program helps you keep track of your recurring expenses.")
-    print("You can import your bank account and/or credit card transaction data.")
-    print("This program will sort through all the transaction data and provide you with")
+    print("\nWelcome to the Recurring Expense Tracker: RET!\n")
+    print("You can import your bank account and/or credit card transaction data into RET.")
+    print("RET will sort through all the transaction data and provide you with")
     print("a list of recurring expenses and subscriptions.\n")
-    print("To provide an platform for you to manage your recurring expenses,")
-    print("the RET will use Google Sheets to import your CSV files and provide the output for you as well.\n")
-    print("To use a Google Spreadsheet that you already created please select option 2. below\n")
-    print("Let's get started!\n\n")
+    print("To provide a platform for you to manage your recurring expenses,")
+    print("RET will use Google Sheets to let you import your CSV files and")
+    print("provide the output for you as well.\n")
+    print("If you like, RET can create a new Google Spreadsheet and share it with you.")
+    print("If you already have one please select option 2. below.\n")
+    print("Let's get started!\n")
 
     go_on = input("Do you want to continue? \
                   \nPress: \
