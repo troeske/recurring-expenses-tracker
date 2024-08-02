@@ -15,6 +15,7 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET_NAME = 'Recurring Expense Tracker'
 
+
 def intro_go_on():
     """
     Display the intro message
@@ -70,6 +71,7 @@ def create_worksheet(user_email):
     Create a new worksheet for the user and share it with the user and RET
     Note: RET is owner and the user is editor. Later versions should make user owner
     """
+    global SHEET # as we need this in all functions, define as global constant
 
     print("\nRET is creating a new worksheet for you...")
     try:
@@ -89,6 +91,7 @@ def open_existing_worksheet():
     """
     Open an a worksheet that was created through RET
     """
+    global SHEET # as we need this in all functions, define as global constant
 
     existing_ws = input("Please enter the URL of the worksheet you want to open: \n")
 
@@ -99,8 +102,20 @@ def open_existing_worksheet():
         print(f"\nAn error occurred: {e}")
         return False
     
-    print(f"\nSuccessfully accessed Google Sheet: {SHEET.title}")
+    print(f"\nSuccessfully accessed Google Sheet: {SHEET.title}\n")
     return True
+
+def wait_for_user(display_text):
+    """
+    display text with y/n option
+    Wait for the user until he/she presses 'y' 
+    """
+    imported = input(f"\n{display_text}")
+
+    while imported == "n":
+        imported = input(f"{display_text}")
+    
+    print("\nGreat! Let's move on to the next step.\n")
 
 
 def main():
@@ -120,16 +135,12 @@ def main():
         # we need to handle error case if worksheet is not created
 
     elif mode == 2:
-        
         while not open_existing_worksheet():
             print("The URL you entered is not a valid Google Sheet. Please try again.\n")
         
-        
-
-
-    else:
-        return
-        
+    print(f"Now, please imnport your CSV file to the Google Sheet: '{SHEET.title}' just created or opened.")
+    print("You can do this by clicking on the 'File' menu in the Google Sheet and selecting 'Import'.")
     
+    wait_for_user("Have you imported the CSV file to the Google Sheet? (y/n): ")
 
 main()
