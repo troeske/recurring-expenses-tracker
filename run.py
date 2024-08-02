@@ -337,11 +337,21 @@ def import_raw_data(raw_data_wsheet):
                     TX_AMOUNT_KEY: raw_tx_data[i][tx_amount_col] 
                     }]  
 
-        print(new_row)
+        #print(new_row)
         selected_tx_data.append(new_row)
 
     return selected_tx_data
 
+def do_you_want_to_continue(message):
+    """
+    Ask the user if she/he wants to continue
+    """
+    response = input(message)
+    
+    if response == "y":
+        return True
+    else:
+        return False
 
 def main():
     """
@@ -372,9 +382,20 @@ def main():
     print(f"Great! RET connected to your Google Worksheet: {RAW_DATA_WSHEET.title}.\n")
 
     #import raw transaction data from the worksheet
-    raw_tx_data = import_raw_data(RAW_DATA_WSHEET)
-    #print("The raw transaction data has been successfully imported.\n")
-    #print("Here are the first 5 records:\n")
-    #print(raw_tx_data[:10])
+    selected_raw_tx_data = import_raw_data(RAW_DATA_WSHEET)
+    print("The raw transaction data has been successfully imported.\n")
+    print("Here are the first 5 records:\n")
+    print(selected_raw_tx_data[:10])
+    
+    message = "\nDoes the data look right and doyou want to continue? (y/n):\n"
+    if not do_you_want_to_continue(message):
+        print("Goodbye!")
+        return
+    
+    #let's start the data analysis
+    
+
+
+
 
 main()
