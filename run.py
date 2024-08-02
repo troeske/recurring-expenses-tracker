@@ -57,7 +57,7 @@ def get_user_email():
 
 def validate_email(email):
     """
-    Validate that email is a valid email address. Function provided by Github Copilot
+    Make sure that email is a valid email address. Function provided by Github Copilot
     """
     pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     if re.match(pattern, email):
@@ -85,6 +85,23 @@ def create_worksheet(user_email):
     print("You can access your worksheet at the following link:\n")
     print(SHEET.url)
 
+def open_existing_worksheet():
+    """
+    Open an a worksheet that was created through RET
+    """
+
+    existing_ws = input("Please enter the URL of the worksheet you want to open: \n")
+
+    try:
+        SHEET = GSPREAD_CLIENT.open_by_url(existing_ws.strip())
+
+    except Exception as e:
+        print(f"\nAn error occurred: {e}")
+        return False
+    
+    print(f"\nSuccessfully accessed Google Sheet: {SHEET.title}")
+    return True
+
 
 def main():
     """
@@ -100,8 +117,17 @@ def main():
         print(user_email)
 
         create_worksheet(user_email)
+        # we need to handle error case if worksheet is not created
+
     elif mode == 2:
-        print("This feature is not available yet. Please try again later.")
+        
+        while not open_existing_worksheet():
+            print("The URL you entered is not a valid Google Sheet. Please try again.\n")
+        
+        
+
+
+    else:
         return
         
     
