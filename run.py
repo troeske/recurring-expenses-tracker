@@ -2,14 +2,13 @@ import gspread
 from google.oauth2.service_account import Credentials
 import re
 
-
+# love sandwiches example used as baseline
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/drive"
     ]
 
-# love sandwiches example used as baseline
 CREDS = Credentials.from_service_account_file('creds.json')
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
@@ -66,44 +65,59 @@ def validate_email(email):
     else:
         return False
 
-def create_worksheet(user_email):
+def create_spreadsheet(user_email):
     """
     Create a new worksheet for the user and share it with the user and RET
     Note: RET is owner and the user is editor. Later versions should make user owner
+    Return: the Spreadsheet object that RET created for the user
     """
-    global SHEET # as we need this in all functions, define as global constant
 
     print("\nRET is creating a new worksheet for you...")
     try:
-        SHEET = GSPREAD_CLIENT.create(SHEET_NAME)
-        SHEET.share(user_email, perm_type='user', role='writer')
+        spreadsheet = GSPREAD_CLIENT.create(SHEET_NAME)
+        spreadsheet.share(user_email, perm_type='user', role='writer')
 
     except Exception as e:
         print(f"An error occurred: {e}")
         print("Please try again later.")
-        return
+        return False
     
-    print("Worksheet created successfully!\n")
-    print("You can access your worksheet at the following link:\n")
-    print(SHEET.url)
+    return spreadsheet
 
-def open_existing_worksheet():
+def get_existing_spreadsheet():
     """
-    Open an a worksheet that was created through RET
+    Open an a spreadsheet that was created through RET
+    Return: the Spreadsheet object that the user wants to open
     """
-    global SHEET # as we need this in all functions, define as global constant
+    existing_ssheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
+    
+    #loop as long user entered empty string
+    while existing_ssheet =="":
+        existing_ssheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
+    
+    #let's try to open the spreadsheet
+    spreadsheet = open_existing_spreadsheet(existing_ssheet)
+    while not spreadsheet:
+        #seems user input isn't correct, so let's ask again
+        existing_ssheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
+        spreadsheet = open_existing_spreadsheet(existing_ssheet)
+    
+    #all good now so let's return the worksheet
+    return spreadsheet
 
-    existing_ws = input("Please enter the URL of the worksheet you want to open: \n")
+def open_existing_spreadsheet(existing_ssheet):
+    """
+    Open an a spreadsheet that was created through RET
+    """
 
     try:
-        SHEET = GSPREAD_CLIENT.open_by_url(existing_ws.strip())
+        spreadsheet = GSPREAD_CLIENT.open_by_url(existing_ssheet.strip())
 
     except Exception as e:
         print(f"\nThe following error occurred: {e}")
         return False
     
-    print(f"\nSuccessfully accessed Google Sheet: {SHEET.title}\n")
-    return True
+    return spreadsheet
 
 def wait_for_user(display_text):
     """
@@ -129,12 +143,12 @@ def continue_RET():
         return False
     
 
-def get_imported_csv_wsheet():
+def get_imported_csv_wsheet(spreadsheet):
     """
     handles the import prompting of the user to import  the CSV file to the Google Sheet
     returns: the worksheet that the user imported the CSV file to
     """
-    print(f"Now, please imnport your CSV file to the Google Sheet: '{SHEET.title}' just created or opened.")
+    print(f"\nNow, please imnport your CSV file to the Google Sheet: '{spreadsheet.title}' RET just created or opened.")
     print("You can do this by clicking on the 'File' menu in the Google Sheet and selecting 'Import'.")
     
     wait_for_user("Have you imported the CSV file to the Google Sheet? (y/n): ")
@@ -147,23 +161,23 @@ def get_imported_csv_wsheet():
         ws_name = input("Please enter the worksheet name where you imported the CSV file: \n")
     
     #let's try to select the worksheet
-    worksheet = select_imported_csv_wsheet(ws_name)
+    worksheet = select_imported_csv_wsheet(spreadsheet, ws_name)
     while not worksheet:
         #seems user input isn't correct, so let's ask again
         ws_name = input("Please enter the worksheet name where you imported the CSV file: \n")
-        worksheet = select_imported_csv_wsheet(ws_name)
+        worksheet = select_imported_csv_wsheet(spreadsheet, ws_name)
     
     #all good now so let's return the worksheet
     return worksheet
 
 
-def select_imported_csv_wsheet(ws_name):
+def select_imported_csv_wsheet(spreadsheet, ws_name):
     """
     try to select worksheet ws_name
     return valid worksheet or False
     """
     try:
-        worksheet = SHEET.worksheet(ws_name)
+        worksheet = spreadsheet.worksheet(ws_name)
 
     except gspread.exceptions.WorksheetNotFound as e:
         print(f"\nRET couldn't find your worksheet: {e}")
@@ -181,19 +195,23 @@ def main():
     if not mode:
         print("Goodbye!")
         return
+    
     elif mode == 1:    
         user_email = get_user_email()
         print(user_email)
 
-        create_worksheet(user_email)
-        # we need to handle error case if worksheet is not created
+        SHEET = create_spreadsheet(user_email)
+        print(f"\nSuccessfully created Google Spreadsheet: {SHEET.title}\n")
+        print("You can access your worksheet at the following link:\n")
+        print(SHEET.url)
 
     elif mode == 2:
-        while not open_existing_worksheet():
-            print("The URL you entered is not a valid Google Sheet. Please try again.\n")
+        SHEET = get_existing_spreadsheet()
+        print(f"Great! We have successfully opened the Google Spreadsheet: {SHEET.title}.\n")
+
     
     # regardless if user created a new sheet or re-used on, we  we are now ready to ask the user to import the CSV file    
-    IMPORT_W_SHEET = get_imported_csv_wsheet()
+    IMPORT_W_SHEET = get_imported_csv_wsheet(SHEET)
     print(f"Great! You have successfully imported the CSV file to the Google Sheet: {IMPORT_W_SHEET.title}.\n")
     
 
