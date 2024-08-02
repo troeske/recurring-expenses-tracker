@@ -15,6 +15,10 @@ SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET_NAME = 'Recurring Expense Tracker'
 MAX_COL_NUMBER = 50
+ROW_KEY = "row"
+TX_DATE_KEY = "tx_date"
+TX_MERCHANT_KEY = "tx_merchant"
+TX_AMOUNT_KEY = "tx_amount"
 
 
 def intro_go_on():
@@ -286,7 +290,6 @@ def import_raw_data(raw_data_wsheet):
     start_row = get_int(input_message)
     while not start_row:
         start_row = get_int(input_message)
-    print(start_row)
     
     #now the columns for tx_date, tx_merchant, and tx_amount
     #let's start with the transaction date column
@@ -297,7 +300,6 @@ def import_raw_data(raw_data_wsheet):
     
     #we need to subtract 1 to get the zero-based index
     tx_date_col -= 1
-    print(tx_date_col)
 
     #now the merchant column
     message= "\nPlease enter the column letter where the \nmerchant/recipient is located (e.g. A, B, C, etc.):\n"
@@ -307,7 +309,6 @@ def import_raw_data(raw_data_wsheet):
     
     #we need to subtract 1 to get the zero-based index
     tx_merchant_col -= 1
-    print(tx_merchant_col)
 
     # now the amount column
     message= "\nPlease enter the column letter where the transaction amount \nis located (e.g. A, B, C, etc.):\n"
@@ -317,20 +318,29 @@ def import_raw_data(raw_data_wsheet):
      
     #we need to subtract 1 to get the zero-based index
     tx_amount_col -= 1
-    print(tx_amount_col)
 
 
-    print(f"\nTHANK YOU! RET is now importing your raw transaction data from the worksheet: {raw_data_wsheet.title}.\n")
+    print(f"\nTHANK YOU!\nRET is now importing your raw transaction data from the worksheet: \n{raw_data_wsheet.title}.\n")
     print("This may take a few seconds depending on the size of the data.\n")
     print("Please wait...\n")
 
     raw_tx_data = raw_data_wsheet.get_all_values()
     
-    #we need to loop through the list of lists and extract the rows and columns that the user specified
-    for i in range(int(start_row)-1, len(raw_tx_data)):
-        print(f"Row: {i} | TX-Date: {raw_tx_data[i][tx_date_col]} | TX-Merchant: {raw_tx_data[i][tx_merchant_col]} | TX-Amount: {raw_tx_data[i][tx_amount_col]} \n")
+    #we need to loop through the list of lists and extract the rows and columns that the user specified and create a list of dfictionaries
+    selected_tx_data = []
 
-    return raw_tx_data
+    for i in range(int(start_row)-1, len(raw_tx_data)):
+        new_row = [{
+                    ROW_KEY: i, 
+                    TX_DATE_KEY: raw_tx_data[i][tx_date_col], 
+                    TX_MERCHANT_KEY: raw_tx_data[i][tx_merchant_col],
+                    TX_AMOUNT_KEY: raw_tx_data[i][tx_amount_col] 
+                    }]  
+
+        print(new_row)
+        selected_tx_data.append(new_row)
+
+    return selected_tx_data
 
 
 def main():
