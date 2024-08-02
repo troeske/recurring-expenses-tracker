@@ -27,12 +27,13 @@ def intro_go_on():
     print("a list of recurring expenses and subscriptions.\n")
     print("To provide an platform for you to manage your recurring expenses,")
     print("the RET will use Google Sheets to import your CSV files and provide the output for you as well.\n")
+    print("To use a Google Spreadsheet that you already created please select option 2. below\n")
     print("Let's get started!\n\n")
 
     go_on = input("Do you want to continue? \
                   \nPress: \
                   \n1 to create a new Spreadsheet \
-                  \n2 for re-using one previsously created through RET \
+                  \n2 for re-using one previsously created (through RET or by you) \
                   \nAny other key to EXIT:\n")
 
     if go_on == "1":
