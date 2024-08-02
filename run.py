@@ -33,7 +33,7 @@ def intro_go_on():
                   \nPress: \
                   \n1 to create a new Spreadsheet \
                   \n2 for re-using one previsously created through RET \
-                  \n\nAny other key to EXIT:\n")
+                  \nAny other key to EXIT:\n")
 
     if go_on == "1":
         return 1
@@ -139,20 +139,38 @@ def get_imported_csv_wsheet():
     
     wait_for_user("Have you imported the CSV file to the Google Sheet? (y/n): ")
 
-    ws_name = input("Please enter the worksheet name where you imported the CSV file: ")
+    ws_name = input("Please enter the worksheet name where you imported the CSV file. \
+    \nYou can do this by double-clicking on the Sheet Name in footer of the Spreadsheet\n")
     
+    #loop as long user entered empty string
     while ws_name =="":
-        ws_name = input("Please enter the worksheet name where you imported the CSV file: ")
+        ws_name = input("Please enter the worksheet name where you imported the CSV file: \n")
     
+    #let's try to select the worksheet
+    worksheet = select_imported_csv_wsheet(ws_name)
+    while not worksheet:
+        #seems user input isn't correct, so let's ask again
+        ws_name = input("Please enter the worksheet name where you imported the CSV file: \n")
+        worksheet = select_imported_csv_wsheet(ws_name)
+    
+    #all good now so let's return the worksheet
+    return worksheet
+
+
+def select_imported_csv_wsheet(ws_name):
+    """
+    try to select worksheet ws_name
+    return valid worksheet or False
+    """
     try:
         worksheet = SHEET.worksheet(ws_name)
 
-    except Exception as e:
-        print(f"\nThe following error occurred: {e}")
+    except gspread.exceptions.WorksheetNotFound as e:
+        print(f"\nRET couldn't find your worksheet: {e}")
         return False
-    
 
     return worksheet
+
 
 def main():
     """
@@ -176,12 +194,7 @@ def main():
     
     # regardless if user created a new sheet or re-used on, we  we are now ready to ask the user to import the CSV file    
     IMPORT_W_SHEET = get_imported_csv_wsheet()
-    if not IMPORT_W_SHEET:
-        if not continue_RET(): return  
-        
-        IMPORT_W_SHEET = get_imported_csv_wsheet()
-    else:
-        print(f"Great! You have successfully imported the CSV file to the Google Sheet: {IMPORT_W_SHEET.title}.\n")
+    print(f"Great! You have successfully imported the CSV file to the Google Sheet: {IMPORT_W_SHEET.title}.\n")
     
 
 main()
