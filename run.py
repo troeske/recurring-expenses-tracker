@@ -1,4 +1,5 @@
 import gspread
+from gspread.exceptions import SpreadsheetNotFound, GSpreadException, APIError
 from google.oauth2.service_account import Credentials
 import re
 
@@ -113,8 +114,35 @@ def open_existing_spreadsheet(existing_ssheet):
     try:
         spreadsheet = GSPREAD_CLIENT.open_by_url(existing_ssheet.strip())
 
+    except SpreadsheetNotFound as e:
+        print(f"\nRET couldn't find your spreadsheet: {e}")
+        return False
+    
+    except APIError as e:
+        #requested help from Copilot
+        if e.response.status_code == 403:
+            print(f"\nYou do not have access to this spreadsheet: {e}")
+        else:
+            print(f"\nAn API error occurred: {e}")
+        return False
+    
+    except GSpreadException as e:
+        print(f"\nAn error occurred trying to access the spreadsheet: {e}")
+        return
+    
+    except PermissionError:
+        print(f"\nRET does not have permission to access this spreadsheet. \
+                \nYou can add RET as an editor to the spreadsheet.\
+                \nClick Share on the upper right corner of the Google Sheet and add:\
+                \n{CREDS.service_account_email}\
+                \nThen try again.")
+        return False
+
     except Exception as e:
-        print(f"\nThe following error occurred: {e}")
+        print(f"\nUnexpected  error occurred: \n")
+        #from https://docs.python.org/3/tutorial/errors.html:
+        print(type(e))    # the exception type
+        
         return False
     
     return spreadsheet
