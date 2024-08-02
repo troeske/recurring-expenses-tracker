@@ -239,7 +239,7 @@ def get_int(message):
     
     except ValueError:
         int_value = input(message)
-        return Fales
+        return False
 
     return int_value
 
@@ -256,7 +256,6 @@ def column_letter_to_number(column_letter):
     
     except ValueError:
         #Provided by Copilot:
-        print("Converting column letter to number")
         column_letter = column_letter.upper()
         column_number = 0
         for char in column_letter:
@@ -271,7 +270,7 @@ def column_letter_to_number(column_letter):
             print("The column number is {str(column_number)}. It cannot be higher then 50")
             return False
         else:
-            print(f"Column Number is: {str(column_number)}.")
+            #print(f"Column Number is: {str(column_number)}.")
             return column_number
     
     except Exception as e:
@@ -331,6 +330,10 @@ def import_raw_data(raw_data_wsheet):
     selected_tx_data = []
 
     for i in range(int(start_row)-1, len(raw_tx_data)):
+        #check if any cell is empty
+        if raw_tx_data[i][tx_date_col].strip() == "" or raw_tx_data[i][tx_merchant_col].strip() == "" or raw_tx_data[i][tx_amount_col].strip() == "":
+            continue
+
         new_row = {
                     ROW_KEY: i, 
                     TX_DATE_KEY: raw_tx_data[i][tx_date_col], 
@@ -338,7 +341,6 @@ def import_raw_data(raw_data_wsheet):
                     TX_AMOUNT_KEY: raw_tx_data[i][tx_amount_col] 
                     } 
 
-        #print(new_row)
         selected_tx_data.append(new_row)
 
     return selected_tx_data
@@ -367,12 +369,8 @@ class TxData:
     Return: Class object
     """
 
-    def __init__(self, selected_raw_tx_data, ROW_KEY, TX_DATE_KEY, TX_MERCHANT_KEY, TX_AMOUNT_KEY):
+    def __init__(self, selected_raw_tx_data):
         self.selected_raw_tx_data = selected_raw_tx_data
-        self.ROW_KEY = ROW_KEY
-        self.TX_DATE_KEY = TX_DATE_KEY
-        self.TX_MERCHANT_KEY = TX_MERCHANT_KEY
-        self.TX_AMOUNT_KEY = TX_AMOUNT_KEY
 
         self.sorted_selected_raw_data = []
     
@@ -441,8 +439,8 @@ def main():
     
     #let's start the data analysis
     #instantiate the class
-    tx_data = TxData(selected_raw_tx_data, ROW_KEY, TX_DATE_KEY, TX_MERCHANT_KEY, TX_AMOUNT_KEY)
-    
+    tx_data = TxData(selected_raw_tx_data)
+
     print("Here are the first 5 records:\n")
     tx_data.print_data(5, False)
     
