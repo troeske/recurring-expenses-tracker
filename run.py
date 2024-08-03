@@ -2,7 +2,8 @@ import gspread
 from gspread.exceptions import SpreadsheetNotFound, GSpreadException, APIError
 from google.oauth2.service_account import Credentials
 from datetime import datetime
-from dateutil import parse
+from dateutil import parser
+import re
 
 
 # love sandwiches example used as baseline
@@ -168,8 +169,6 @@ def wait_for_user(display_text):
 
     while response == "n":
         response = input(f"{display_text}")
-    
-    print("\nGreat! Let's move on to the next step.\n")
 
 def continue_RET():
     """
@@ -188,13 +187,13 @@ def get_imported_csv_wsheet(spreadsheet):
     prompts the user to import  the CSV file to a Google Worksheet and privde it's name
     returns: the worksheet that the user imported the CSV file to
     """
-    print(f"\nNow, please imnport your CSV file to the Google Sheet: '{spreadsheet.title}' RET just created or opened.")
+    print(f"\nNow, please imnport your CSV file to the Google Sheet: '{spreadsheet.title}', RET just created or opened.")
     print("You can do this by clicking on the 'File' menu in the Google Sheet and selecting 'Import'.")
     
     wait_for_user("Have you imported the CSV file to the Google Sheet? (y/n): ")
 
     ws_name = input("Please enter the worksheet name where you imported the CSV file. \
-    \nYou can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet\n")
+    You can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet\n")
     
     #loop as long user entered empty string
     while ws_name =="":
@@ -321,7 +320,7 @@ def import_raw_data(raw_data_wsheet):
     tx_amount_col -= 1
 
 
-    print(f"\nTHANK YOU!\nRET is now importing your raw transaction data from the worksheet: \n{raw_data_wsheet.title}.\n")
+    print(f"\nTHANK YOU! RET is now importing your raw transaction data from the worksheet: \n{raw_data_wsheet.title}.")
     print("This may take a few seconds depending on the size of the data.\n")
     print("Please wait...\n")
 
@@ -363,19 +362,36 @@ def sort_key(d):
     """
     return (d['tx_merchant'], datetime.strptime(d['tx_date'], '%d.%m.%Y'))
     
+#################################################################
+# CLASS TxData                                                  #
+#################################################################
 class TxData:
     """
     Class to handle all aspects of the transaction data incl: clean_up and analysis
     Input: list of dictionaries: selected_raw_tx_data
-    Return: Class object
     """
 
     def __init__(self, selected_raw_tx_data):
         self.selected_raw_tx_data = selected_raw_tx_data
 
         self.sorted_selected_raw_data = []
-        clean_tx_data = []
+        self.clean_tx_data = []
+        #self.selected_raw_tx_data = []
     
+    def clean_date(self, date_str):
+        """
+        cleans the date string 
+        Return: datetime object
+        Inspired by: https://blog.finxter.com/5-effective-ways-to-check-if-a-string-can-be-converted-to-a-datetime-in-python/
+        """
+        try:
+            clean_date = parser.parse(date_str)
+            return clean_date
+        
+        except ValueError:
+            print(f"{date_str} is not in the right format.")
+            return False
+
     def clean_up_tx_data(self):
         """
         clean up each value row by row coverting date and value as needed
@@ -384,24 +400,9 @@ class TxData:
 
         for i in range(len(self.selected_raw_tx_data)):
             #clean up the date
+            date_str = self.selected_raw_tx_data[i][TX_DATE_KEY]
+            clean_date = self.clean_date(date_str)
             
-            self.clean_tx_data[i][TX_DATE_KEY]
-            
-            try:
-                self.selected_raw_tx_data[i][TX_DATE_KEY] = datetime.strptime(self.selected_raw_tx_data[i][TX_DATE_KEY], '%d.%m.%Y')
-            except ValueError:
-                print(f"Error in row {self.selected_raw_tx_data[i][ROW_KEY]}. The date {self.selected_raw_tx_data[i][TX_DATE_KEY]} is not in the right format.")
-                self.selected_raw_tx_data[i][TX_DATE_KEY] = None
-
-            #clean up the amount
-            try:
-                self.selected_raw_tx_data[i][TX_AMOUNT_KEY] = float(self.selected_raw_tx_data[i][TX_AMOUNT_KEY].replace(",", ""))
-            except ValueError:
-                print(f"Error in row {self.selected_raw_tx_data[i][ROW_KEY]}. The amount {self.selected_raw_tx_data[i][TX_AMOUNT_KEY]} is not in the right format.")
-                self.selected_raw_tx_data[i][TX_AMOUNT_KEY] = None
-
-
-
 
     
     def sort_data(self):
@@ -478,6 +479,7 @@ def main():
     if not do_you_want_to_continue(message):
         print("Goodbye!")
         return
+    
     #clean up the tx data row by row
     tx_data.clean_up_tx_data()
 
