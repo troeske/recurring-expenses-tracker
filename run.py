@@ -390,6 +390,7 @@ class TxData:
         try:
             clean_date = parser.parse(date_str)
             return clean_date
+            
         
         except ValueError:
             print(f"{date_str} is not in the right format.")
@@ -570,7 +571,7 @@ def main():
     
     #let's clean the console window.
     #copied from: https://www.sololearn.com/en/Discuss/3220821/how-how-to-delete-printed-text
-    os.system('cls' if os.name == 'nt' else 'clear')
+    #os.system('cls' if os.name == 'nt' else 'clear')
 
     #clean up the tx data row by row
     tx_data.clean_up_tx_data()
