@@ -192,7 +192,7 @@ def get_imported_csv_wsheet(spreadsheet):
     
     wait_for_user("Have you imported the CSV file to the Google Sheet? (y/n): ")
 
-    ws_name = input("Please enter the worksheet name where you imported the CSV file. \
+    ws_name = input("Please enter the worksheet name where you imported the CSV file.\
     You can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet\n")
     
     #loop as long user entered empty string
@@ -392,6 +392,43 @@ class TxData:
             print(f"{date_str} is not in the right format.")
             return False
 
+    def clean_amount(self, amount_str):
+        """
+        cleans the amount string
+        Return: float
+        Inspired by ChatGPT
+        """
+        try:
+            # Remove spaces
+            amount_str = amount_str.replace(" ", "")
+        
+            # Remove thousands separators (commas or dots followed by exactly 3 digits)
+            amount_str = re.sub(r'(?<=\d)[,\.](?=\d{3}(?:\D|$))', '', amount_str)
+            
+            # Replace comma with dot if it's likely a decimal separator (based on format)
+            if ',' in amount_str and '.' in amount_str:
+                if amount_str.rfind(',') > amount_str.rfind('.'):
+                    amount_str = amount_str.replace(',', '')  # Remove thousands separator
+                else:
+                    amount_str = amount_str.replace(',', '.')  # Change comma to dot for decimal separator
+            elif ',' in amount_str:
+                amount_str = amount_str.replace(',', '.')
+            
+            # Convert the cleaned string to float
+            clean_amount = float(amount_str)
+            
+            return clean_amount
+        
+        except ValueError:
+            print(f"{amount_str} is not in the right format.")
+            return False
+        
+        except Exception as e:
+            print(f"\nUnexpected  error occurred: \n")
+            #from https://docs.python.org/3/tutorial/errors.html:
+            print(type(e))    # the exception type
+            return False
+
     def clean_up_tx_data(self):
         """
         clean up each value row by row coverting date and value as needed
@@ -403,6 +440,9 @@ class TxData:
             date_str = self.selected_raw_tx_data[i][TX_DATE_KEY]
             clean_date = self.clean_date(date_str)
             
+            #clean up the amount
+            amount_str = self.selected_raw_tx_data[i][TX_AMOUNT_KEY]
+            clean_amount = self.clean_amount(amount_str)
 
     
     def sort_data(self):
