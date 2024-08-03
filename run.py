@@ -395,19 +395,24 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
         for row in data:
             ws_output.append_row([row[ROW_KEY], row[TX_DATE_KEY], row[TX_MERCHANT_KEY], row[TX_AMOUNT_KEY]])
         
-        
         print(f"The data has been successfully uploaded to:\nSpreadsheet: {spreadsheet.title} worksheet: {worksheet_name}.")
+        return True
     
     except APIError as e:
         if e.response.status_code == 400:
             print(f"\nA worksheet with the name '{worksheet_name}' already exists in the spreadsheet: {spreadsheet.title}.")
-            
+            new_worksheet_name = input("Please enter a different name for the worksheet:\n")
+            #let's call this function recursively to get things done with a new name for the worksheet
+            if upload_data_to_worksheet(spreadsheet, new_worksheet_name, data):
+                return True
+            else:
+                return False
+
         else:
             print(f"\nAn API error occurred: {e}")
-        print(f"\nAn API error occurred: {e}")
-        print(f"Status Code: {e.response.status_code}")
-        print(f"Error Message: {e.response.text}")
-        return False
+            print(f"Status Code: {e.response.status_code}")
+            print(f"Error Message: {e.response.text}")
+            return False
     
     except GSpreadException as e:
         print(f"\nAn error occurred trying to access the spreadsheet: {e}")
