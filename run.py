@@ -4,6 +4,8 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime
 from dateutil import parser
 import re
+import os
+
 
 
 # love sandwiches example used as baseline
@@ -22,6 +24,7 @@ ROW_KEY = "row"
 TX_DATE_KEY = "tx_date"
 TX_MERCHANT_KEY = "tx_merchant"
 TX_AMOUNT_KEY = "tx_amount"
+INPUT_DATA_ERROR_TOLERANCE = 0.1
 
 
 def intro_go_on():
@@ -374,14 +377,14 @@ class TxData:
     def __init__(self, selected_raw_tx_data):
         self.selected_raw_tx_data = selected_raw_tx_data
 
-        self.sorted_selected_raw_data = []
+        self.sorted_clean_data = []
         self.clean_tx_data = []
         #self.selected_raw_tx_data = []
     
     def clean_date(self, date_str):
         """
         cleans the date string 
-        Return: datetime object
+        Return: datetime object, False in case of any error
         Inspired by: https://blog.finxter.com/5-effective-ways-to-check-if-a-string-can-be-converted-to-a-datetime-in-python/
         """
         try:
@@ -395,7 +398,7 @@ class TxData:
     def clean_amount(self, amount_str):
         """
         cleans the amount string
-        Return: float
+        Return: float, False in case of any error
         Inspired by ChatGPT
         """
         try:
@@ -429,44 +432,90 @@ class TxData:
             print(type(e))    # the exception type
             return False
 
+    def clean_merchant(self, merchant_str):
+        """
+        cleans the merchant string
+        Return: clean string, False in case of any error
+        """
+        try:
+            clean_merchant = merchant_str.strip()
+            clean_merchant = clean_merchant.lower()
+            clean_merchant = clean_merchant.split(",")[0]
+            clean_merchant = clean_merchant.split(";")[0]
+
+            return clean_merchant
+        
+        except ValueError:
+            print(f"{merchant_str} is not in the right format.")
+            return False
+        
+        except Exception as e:
+            print(f"\nUnexpected  error occurred: \n")
+            #from https://docs.python.org/3/tutorial/errors.html:
+            print(type(e))    # the exception type
+            return False
+
     def clean_up_tx_data(self):
         """
         clean up each value row by row coverting date and value as needed
         Return: clean_tx_data
         """
-
-        for i in range(len(self.selected_raw_tx_data)):
+        convert_error_count = 0
+        num_rows = len(self.selected_raw_tx_data)
+        for i in range(num_rows):
             #clean up the date
             date_str = self.selected_raw_tx_data[i][TX_DATE_KEY]
             clean_date = self.clean_date(date_str)
+            convert_error_count += 1 if not clean_date else 0
+      
             
             #clean up the amount
             amount_str = self.selected_raw_tx_data[i][TX_AMOUNT_KEY]
             clean_amount = self.clean_amount(amount_str)
+            convert_error_count += 1 if not clean_amount else 0
+
+            #clean up the merchant
+            merchant_str = self.selected_raw_tx_data[i][TX_MERCHANT_KEY]
+            clean_merchant = self.clean_merchant(merchant_str)
+            convert_error_count += 1 if not clean_merchant else 0
+
+            #let's check if we are within the error tolerance
+            if convert_error_count < num_rows * INPUT_DATA_ERROR_TOLERANCE:
+                new_row = {
+                    ROW_KEY: i, 
+                    TX_DATE_KEY: clean_date, 
+                    TX_MERCHANT_KEY: clean_merchant,
+                    TX_AMOUNT_KEY: clean_amount 
+                    } 
+
+                self.clean_tx_data.append(new_row)
+            else:
+                print(f"Too many errors in the data. Please check the data and try again.")
+                return False
+
 
     
-    def sort_data(self):
+    def sort_data(self, data):
         """
         Sort the transaction data
         Creates sorted_selected_raw_tx_data
         """
         #sort the data by merchant and date, learned from GeeksforGeeks
-        self.sorted_selected_raw_data = sorted(
-            self.selected_raw_tx_data,
+        sorted_data = sorted(
+            data,
             key=lambda x: (x[TX_MERCHANT_KEY], x[TX_DATE_KEY])
             )
+        
+        return sorted_data
 
         
-    def print_data(self, number_of_rows, sorted):
+    def print_data(self, number_of_rows, data):
         """
         Print the first number_of_rows of the transaction data
         If sorted use the sorted data, otherwise use the selected_raw_data
         """
         for i in range(number_of_rows):
-            if sorted:
-                print(self.sorted_selected_raw_data[i])
-            elif not sorted:
-                print(self.selected_raw_tx_data[i])
+            print(data[i])
 
 
     def analyze_data(self):
@@ -513,20 +562,25 @@ def main():
     tx_data = TxData(selected_raw_tx_data)
 
     print("Here are the first 5 records:\n")
-    tx_data.print_data(5, False)
-    
+    tx_data.print_data(5, tx_data.selected_raw_tx_data)
     message = "\nDoes the data look right and doyou want to continue? (y/n):\n"
     if not do_you_want_to_continue(message):
         print("Goodbye!")
         return
     
+    #let's clean the console window.
+    #copied from: https://www.sololearn.com/en/Discuss/3220821/how-how-to-delete-printed-text
+    os.system('cls' if os.name == 'nt' else 'clear')
+
     #clean up the tx data row by row
     tx_data.clean_up_tx_data()
 
 
     #sort the raw data
-    tx_data.sort_data()
-    #tx_data.print_data(5, True)
+    tx_data.sorted_clean_data = tx_data.sort_data(tx_data.clean_tx_data)
+    print("The data has been cleaned up and sorted. Here are the first 15 transactions:\n")
+    tx_data.print_data(15, tx_data.sorted_clean_data)
+
 
 
 
