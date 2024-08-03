@@ -364,6 +364,14 @@ def sort_key(d):
     Return the key for sorting the data
     """
     return (d['tx_merchant'], datetime.strptime(d['tx_date'], '%d.%m.%Y'))
+
+def clean_console():
+    """
+    cleans the console window.
+    copied from: https://www.sololearn.com/en/Discuss/3220821/how-how-to-delete-printed-text
+    """
+
+    os.system('cls' if os.name == 'nt' else 'clear')
     
 #################################################################
 # CLASS TxData                                                  #
@@ -510,14 +518,49 @@ class TxData:
         return sorted_data
 
         
-    def print_data(self, number_of_rows, data):
+    def print_data(self, number_of_rows, what_data, clean):
         """
-        Print the first number_of_rows of the transaction data
-        If sorted use the sorted data, otherwise use the selected_raw_data
+        Print the provided number_of_rows of the data requested
+        In case 0 is provided, print all rows
+        What_data selects what to print: raw, clean, sorted
         """
-        for i in range(number_of_rows):
-            #tx_date = data[i][TX_DATE_KEY]
-            print(f"{data[i][TX_DATE_KEY]} | {data[i][TX_DATE_KEY].day} | {data[i][TX_MERCHANT_KEY]} | {data[i][TX_AMOUNT_KEY]}")
+        if clean: clean_console()
+        
+        print(f"Here is the {what_data} data:\n")
+        
+        try:
+            if what_data == "raw":
+                if number_of_rows == 0:
+                    number_of_rows = len(self.selected_raw_tx_data)
+
+            elif what_data == "clean":
+                if number_of_rows == 0:
+                    number_of_rows = len(self.clean_tx_data)
+            
+            elif what_data == "sorted":
+                if number_of_rows == 0:
+                    number_of_rows = len(self.sorted_clean_data)
+            
+            else:
+                print("print mode not supported\n")
+                return
+        
+
+            for i in range(number_of_rows):
+                if what_data == "raw":
+                    print(f"{self.selected_raw_tx_data[i][ROW_KEY]} | {self.selected_raw_tx_data[i][TX_DATE_KEY]} | {self.selected_raw_tx_data[i][TX_MERCHANT_KEY]} | {self.selected_raw_tx_data[i][TX_AMOUNT_KEY]}")
+
+                elif what_data == "clean":
+                    print(f"{self.clean_tx_data[i][TX_DATE_KEY]} | {self.clean_tx_data[i][TX_DATE_KEY].day} | {self.clean_tx_data[i][TX_MERCHANT_KEY]} | {self.clean_tx_data[i][TX_AMOUNT_KEY]}")
+                
+                elif what_data == "sorted":
+                    print(f"{self.sorted_clean_data[i][TX_DATE_KEY]} | {self.sorted_clean_data[i][TX_DATE_KEY].day} | {self.sorted_clean_data[i][TX_MERCHANT_KEY]} | {self.sorted_clean_data[i][TX_AMOUNT_KEY]}")
+        
+        except Exception as e:
+           print(f"\nUnexpected  error occurred: \n")
+           #from https://docs.python.org/3/tutorial/errors.html:
+           print(type(e))    # the exception type
+           return False 
 
 
     def analyze_data(self):
@@ -549,7 +592,8 @@ def main():
         SHEET = get_existing_spreadsheet()
         print(f"Great! We have successfully opened the Google Spreadsheet: {SHEET.title}.\n")
 
-    
+    clean_console()
+
     # regardless if user created a new sheet or re-used on, we  we are now ready to ask the user to import the CSV file    
     RAW_DATA_WSHEET = get_imported_csv_wsheet(SHEET)
     print(f"Great! RET connected to your Google Worksheet: {RAW_DATA_WSHEET.title}.\n")
@@ -563,25 +607,20 @@ def main():
     #instantiate the class
     tx_data = TxData(selected_raw_tx_data)
 
-    #print("Here are the first 5 records:\n")
-    #tx_data.print_data(5, tx_data.selected_raw_tx_data)
-    #message = "\nDoes the data look right and doyou want to continue? (y/n):\n"
-    #if not do_you_want_to_continue(message):
-    #    print("Goodbye!")
-    #    return
+    tx_data.print_data(10, "raw", True)
+    message = "\nDoes the data look right and doyou want to continue? (y/n):\n"
+    if not do_you_want_to_continue(message):
+        print("Goodbye!")
+        return
     
-    #let's clean the console window.
-    #copied from: https://www.sololearn.com/en/Discuss/3220821/how-how-to-delete-printed-text
-    os.system('cls' if os.name == 'nt' else 'clear')
-
     #clean up the tx data row by row
+    print("Cleaning up the transaction data...")
     tx_data.clean_up_tx_data()
 
-
     #sort the raw data
+    print("Sorting the transaction data...")
     tx_data.sorted_clean_data = tx_data.sort_data(tx_data.clean_tx_data)
-    print("The data has been cleaned up and sorted. Here are the first 15 transactions:\n")
-    tx_data.print_data(90, tx_data.sorted_clean_data)
+    tx_data.print_data(0, "sorted", True)
 
 
 
