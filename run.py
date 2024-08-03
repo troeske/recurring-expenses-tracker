@@ -372,7 +372,53 @@ def clean_console():
     """
 
     os.system('cls' if os.name == 'nt' else 'clear')
+
+def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
+    """
+    create a new worksheet with worksheet_name in spreadsheet and
+    upload the data to the selected worksheet
+    """
+    print("starting the data upload to Google Sheets...")
+
+    try:
+        print("creating new worksheet...")
+        # creating the worksheet
+        ws_output = spreadsheet.add_worksheet(title=worksheet_name, rows=1, cols=10)
+        
+        print("uploading the data...")
+        # filling in the data
+
+        # first the headings
+        ws_output.insert_row(["Original Row",TX_DATE_KEY, TX_MERCHANT_KEY, TX_AMOUNT_KEY], 1)
+
+        # then the data
+        for row in data:
+            ws_output.append_row([row[ROW_KEY], row[TX_DATE_KEY], row[TX_MERCHANT_KEY], row[TX_AMOUNT_KEY]])
+        
+        
+        print(f"The data has been successfully uploaded to:\nSpreadsheet: {spreadsheet.title} worksheet: {worksheet_name}.")
     
+    except APIError as e:
+        if e.response.status_code == 400:
+            print(f"\nA worksheet with the name '{worksheet_name}' already exists in the spreadsheet: {spreadsheet.title}.")
+            
+        else:
+            print(f"\nAn API error occurred: {e}")
+        print(f"\nAn API error occurred: {e}")
+        print(f"Status Code: {e.response.status_code}")
+        print(f"Error Message: {e.response.text}")
+        return False
+    
+    except GSpreadException as e:
+        print(f"\nAn error occurred trying to access the spreadsheet: {e}")
+        return
+    
+    except Exception as e:
+        print(f"\nUnexpected  error occurred: \n")
+        #from https://docs.python.org/3/tutorial/errors.html:
+        print(type(e))    # the exception type
+        return False
+
 #################################################################
 # CLASS TxData                                                  #
 #################################################################
@@ -608,7 +654,7 @@ def main():
     tx_data = TxData(selected_raw_tx_data)
 
     tx_data.print_data(10, "raw", True)
-    message = "\nDoes the data look right and doyou want to continue? (y/n):\n"
+    message = "\nDoes the data look right and do you want to continue? (y/n):\n"
     if not do_you_want_to_continue(message):
         print("Goodbye!")
         return
@@ -620,7 +666,13 @@ def main():
     #sort the raw data
     print("Sorting the transaction data...")
     tx_data.sorted_clean_data = tx_data.sort_data(tx_data.clean_tx_data)
-    tx_data.print_data(0, "sorted", True)
+    #tx_data.print_data(0, "sorted", True)
+
+    #upload the data to the worksheet
+    if not upload_data_to_worksheet(SHEET, "SORTED TX DATA", tx_data.sorted_clean_data):
+        print("an error occurred while uploading the data to the Google Sheet.")
+    
+
 
 
 
