@@ -5,7 +5,6 @@ from datetime import datetime
 from dateutil import parser
 import re
 import os
-import locale
 
 
 # love sandwiches example used as baseline
@@ -93,7 +92,7 @@ def create_spreadsheet(user_email):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        #from https://docs.python.org/3/tutorial/errors.html:
+        # from https://docs.python.org/3/tutorial/errors.html:
         print(type(e))    # the exception type
         print("Please try again later.")
         return False
@@ -107,18 +106,18 @@ def get_existing_spreadsheet():
     """
     existing_ssheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
     
-    #loop as long user entered empty string
+    # loop as long user entered empty string
     while existing_ssheet =="":
         existing_ssheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
     
-    #let's try to open the spreadsheet
+    # let's try to open the spreadsheet
     spreadsheet = open_existing_spreadsheet(existing_ssheet)
     while not spreadsheet:
-        #seems user input isn't correct, so let's ask again
+        # seems user input isn't correct, so let's ask again
         existing_ssheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
         spreadsheet = open_existing_spreadsheet(existing_ssheet)
     
-    #all good now so let's return the worksheet
+    # all good now so let's return the worksheet
     return spreadsheet
 
 def open_existing_spreadsheet(existing_ssheet):
@@ -134,7 +133,7 @@ def open_existing_spreadsheet(existing_ssheet):
         return False
     
     except APIError as e:
-        #requested help from Copilot
+        # requested help from Copilot
         if e.response.status_code == 403:
             print(f"\nYou do not have access to this spreadsheet: {e}")
         else:
@@ -156,7 +155,7 @@ def open_existing_spreadsheet(existing_ssheet):
 
     except Exception as e:
         print(f"\nUnexpected  error occurred: \n")
-        #from https://docs.python.org/3/tutorial/errors.html:
+        # from https://docs.python.org/3/tutorial/errors.html:
         print(type(e))    # the exception type
         
         return False
@@ -198,18 +197,18 @@ def get_imported_csv_wsheet(spreadsheet):
     ws_name = input("Please enter the worksheet name where you imported the CSV file.\
     You can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet\n")
     
-    #loop as long user entered empty string
+    # loop as long user entered empty string
     while ws_name =="":
         ws_name = input("Please enter the worksheet name where you imported the CSV file: \n")
     
-    #let's try to select the worksheet
+    # let's try to select the worksheet
     worksheet = select_imported_csv_wsheet(spreadsheet, ws_name)
     while not worksheet:
-        #seems user input isn't correct, so let's ask again
+        # seems user input isn't correct, so let's ask again
         ws_name = input("Please enter the worksheet name where you imported the CSV file: \n")
         worksheet = select_imported_csv_wsheet(spreadsheet, ws_name)
     
-    #all good now so let's return the worksheet
+    # all good now so let's return the worksheet
     return worksheet
 
 
@@ -227,7 +226,7 @@ def select_imported_csv_wsheet(spreadsheet, ws_name):
  
     except Exception as e:
         print(f"\nUnexpected  error occurred: \n")
-        #from https://docs.python.org/3/tutorial/errors.html:
+        # from https://docs.python.org/3/tutorial/errors.html:
         print(type(e))    # the exception type
         return False
     
@@ -253,18 +252,18 @@ def column_letter_to_number(column_letter):
     Returns: list of selected columns as numbers. Calling function must subtract 1 to get zero-based index.
     """
 
-    #let's check if column_letter already is an integer
+    # let's check if column_letter already is an integer
     try:
         column_number = int(column_letter)
     
     except ValueError:
-        #Provided by Copilot:
+        # Provided by Copilot:
         column_letter = column_letter.upper()
         column_number = 0
         for char in column_letter:
             column_number = column_number * 26 + (ord(char) - ord('A') + 1)
 
-    #let's make some some common sense checking in the value could right 
+    # let's make some some common sense checking in the value could right 
     try:
         if column_number < 1:
             print(f"The column number is {str(column_number)}. It cannot be less than 1.")
@@ -273,12 +272,12 @@ def column_letter_to_number(column_letter):
             print("The column number is {str(column_number)}. It cannot be higher then 50")
             return False
         else:
-            #print(f"Column Number is: {str(column_number)}.")
+            # print(f"Column Number is: {str(column_number)}.")
             return column_number
     
     except Exception as e:
         print(f"\nUnexpected  error occurred: \n")
-        #from https://docs.python.org/3/tutorial/errors.html:
+        # from https://docs.python.org/3/tutorial/errors.html:
         print(type(e))    # the exception type
         return False
 
@@ -288,29 +287,29 @@ def import_raw_data(raw_data_wsheet):
     Return: the list of lists with the raw transaction data 
     """
 
-    #let's start with the row where the transaction data starts
+    # let's start with the row where the transaction data starts
     input_message = "\nPlease enter the row number \nwhere the transaction data starts (e.g. 1, 2, 3, etc.):\n"
     start_row = get_int(input_message)
     while not start_row:
         start_row = get_int(input_message)
     
-    #now the columns for tx_date, tx_merchant, and tx_amount
-    #let's start with the transaction date column
+    # now the columns for tx_date, tx_merchant, and tx_amount
+    # let's start with the transaction date column
     message= "\nPlease enter the column letter where the \ntransaction date is located \n(e.g. A, B, C, etc.):\n"
     tx_date_col = column_letter_to_number(input(message))
     while not tx_date_col:
         tx_date_col = column_letter_to_number(input(message))
     
-    #we need to subtract 1 to get the zero-based index
+    # we need to subtract 1 to get the zero-based index
     tx_date_col -= 1
 
-    #now the merchant column
+    # now the merchant column
     message= "\nPlease enter the column letter where the \nmerchant/recipient is located (e.g. A, B, C, etc.):\n"
     tx_merchant_col = column_letter_to_number(input(message))
     while not tx_merchant_col:
         tx_merchant_col = column_letter_to_number(input(message))
     
-    #we need to subtract 1 to get the zero-based index
+    # we need to subtract 1 to get the zero-based index
     tx_merchant_col -= 1
 
     # now the amount column
@@ -319,7 +318,7 @@ def import_raw_data(raw_data_wsheet):
     while not tx_amount_col:
         tx_amount_col = column_letter_to_number(input(message))
      
-    #we need to subtract 1 to get the zero-based index
+    # we need to subtract 1 to get the zero-based index
     tx_amount_col -= 1
 
 
@@ -329,11 +328,11 @@ def import_raw_data(raw_data_wsheet):
 
     raw_tx_data = raw_data_wsheet.get_all_values()
     
-    #we need to loop through the list of lists and extract the rows and columns that the user specified and create a list of dfictionaries
+    # we need to loop through the list of lists and extract the rows and columns that the user specified and create a list of dfictionaries
     selected_tx_data = []
 
     for i in range(int(start_row)-1, len(raw_tx_data)):
-        #check if any cell is empty
+        # check if any cell is empty
         if raw_tx_data[i][tx_date_col].strip() == "" or raw_tx_data[i][tx_merchant_col].strip() == "" or raw_tx_data[i][tx_amount_col].strip() == "":
             continue
 
@@ -368,18 +367,15 @@ def sort_key(d):
 def clean_console():
     """
     cleans the console window.
-    copied from: https://www.sololearn.com/en/Discuss/3220821/how-how-to-delete-printed-text
     """
-
+    # copied from: https://www.sololearn.com/en/Discuss/3220821/how-how-to-delete-printed-text
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def convert_datetime_object_to_str(tx_date):
     """
-    Convert tx_date into a string using the local setting. Outline provided by ChatGPT
+    Convert tx_date into a string using the local setting.
     """
-    locale.setlocale(locale.LC_TIME, '')
-    # Convert datetime to local date format
-    local_date = tx_date.strftime(locale.nl_langinfo(locale.D_FMT))
+    local_date = tx_date.strftime('%d/%m/%Y')
     
     return local_date
 
@@ -413,7 +409,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
         if e.response.status_code == 400:
             print(f"\nA worksheet with the name '{worksheet_name}' already exists in the spreadsheet: {spreadsheet.title}.")
             new_worksheet_name = input("Please enter a different name for the worksheet:\n")
-            #let's call this function recursively to get things done with a new name for the worksheet
+            # let's call this function recursively to get things done with a new name for the worksheet
             if upload_data_to_worksheet(spreadsheet, new_worksheet_name, data):
                 return True
             else:
@@ -431,7 +427,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
     
     except Exception as e:
         print(f"\nUnexpected  error occurred: \n")
-        #from https://docs.python.org/3/tutorial/errors.html:
+        # from https://docs.python.org/3/tutorial/errors.html:
         print(type(e))    # the exception type
         return False
 
@@ -443,22 +439,79 @@ class TxData:
     Class to handle all aspects of the transaction data incl: clean_up and analysis
     Input: list of dictionaries: selected_raw_tx_data
     """
+    # we need some class constants for the date format as this seems to be quite messy
+    DATE_FORMAT_DAY_FIRST = True
+    DATE_FORMAT = "%d.%m.%Y"
 
     def __init__(self, selected_raw_tx_data):
         self.selected_raw_tx_data = selected_raw_tx_data
 
         self.sorted_clean_data = []
         self.clean_tx_data = []
-        #self.selected_raw_tx_data = []
-    
+        # self.selected_raw_tx_data = []
+
+        # let's check the date format of the input data
+        self.check_date_format(self.selected_raw_tx_data)
+
+    def check_date_format(self, data):
+        """
+        Check the date format manually as parser.parse is trying convert the date and if the month value is to high 
+        because it is a day then it just switches and takes the smaler value as the month
+        Sets the class constant DATE_FORMAT_DAY_FIRST to True or False
+        """
+        
+        for row in data:
+            date_str = row[TX_DATE_KEY]
+            
+            try:
+                # let's check if we can deconstruct the date string
+                # Regular expression to match dates with '.', '/', or '-' provided by ChatGPT
+                match = re.match(r'(\d{1,2})[./-](\d{1,2})[./-](\d{4})', date_str)
+                
+                if not match:
+                    raise ValueError()
+                
+                # Extract day, month, and year from the matched groups provided by ChatGPT
+                day, month, year = map(int, match.groups())
+                print(f"raw: {date_str} | day: {day} | month: {month} | year: {year}")
+
+                if month > 12:
+                    # seems the date format is not day first but month first, so let's set the class constant and exit
+                    self.DATE_FORMAT_DAY_FIRST = False
+                    print("\nThe date format is not day first.\n")
+                    print(f"raw: {date_str} | day: {month} | month: {day} | year: {year}")
+                    return
+            
+            except ValueError:
+                print(f"{date_str} is not in the right format.")
+                return
+        
+            except Exception as e:
+                print(f"\nUnexpected  error occurred: \n")
+                # from https://docs.python.org/3/tutorial/errors.html:
+                print(type(e))    # the exception type
+                return
+            
     def clean_date(self, date_str):
         """
         cleans the date string 
         Return: datetime object, False in case of any error
-        Inspired by: https://blog.finxter.com/5-effective-ways-to-check-if-a-string-can-be-converted-to-a-datetime-in-python/
         """
+        # let's deconstruct the date string
+        # Regular expression to match dates with '.', '/', or '-' provided by ChatGPT
+        match = re.match(r'(\d{1,2})[./-](\d{1,2})[./-](\d{4})', date_str)
+                
+        if not match:
+            raise ValueError()
+        
+        # Extract day, month, and year from the matched groups provided by ChatGPT depending on the date format
+        if self.DATE_FORMAT_DAY_FIRST:
+            day, month, year = map(int, match.groups())
+        elif not self.DATE_FORMAT_DAY_FIRST:
+            month, day, year = map(int, match.groups())
+             
         try:
-            clean_date = parser.parse(date_str)
+            clean_date = datetime(year, month, day)          
             return clean_date
             
         
@@ -470,8 +523,9 @@ class TxData:
         """
         cleans the amount string
         Return: float, False in case of any error
-        Inspired by ChatGPT
         """
+        # provided by ChatGPT
+
         try:
             # Remove spaces
             amount_str = amount_str.replace(" ", "")
@@ -499,7 +553,7 @@ class TxData:
         
         except Exception as e:
             print(f"\nUnexpected  error occurred: \n")
-            #from https://docs.python.org/3/tutorial/errors.html:
+            # from https://docs.python.org/3/tutorial/errors.html:
             print(type(e))    # the exception type
             return False
 
@@ -522,7 +576,7 @@ class TxData:
         
         except Exception as e:
             print(f"\nUnexpected  error occurred: \n")
-            #from https://docs.python.org/3/tutorial/errors.html:
+            # from https://docs.python.org/3/tutorial/errors.html:
             print(type(e))    # the exception type
             return False
 
@@ -534,23 +588,22 @@ class TxData:
         convert_error_count = 0
         num_rows = len(self.selected_raw_tx_data)
         for i in range(num_rows):
-            #clean up the date
+            # clean up the date
             date_str = self.selected_raw_tx_data[i][TX_DATE_KEY]
             clean_date = self.clean_date(date_str)
             convert_error_count += 1 if not clean_date else 0
       
-            
-            #clean up the amount
+            # clean up the amount
             amount_str = self.selected_raw_tx_data[i][TX_AMOUNT_KEY]
             clean_amount = self.clean_amount(amount_str)
             convert_error_count += 1 if not clean_amount else 0
 
-            #clean up the merchant
+            # clean up the merchant
             merchant_str = self.selected_raw_tx_data[i][TX_MERCHANT_KEY]
             clean_merchant = self.clean_merchant(merchant_str)
             convert_error_count += 1 if not clean_merchant else 0
 
-            #let's check if we are within the error tolerance
+            # let's check if we are within the error tolerance
             if convert_error_count < num_rows * INPUT_DATA_ERROR_TOLERANCE:
                 new_row = {
                     ROW_KEY: i, 
@@ -571,7 +624,7 @@ class TxData:
         Sort the transaction data
         Creates sorted_selected_raw_tx_data
         """
-        #sort the data by merchant and date, learned from GeeksforGeeks
+        # sort the data by merchant and date, learned from GeeksforGeeks
         sorted_data = sorted(
             data,
             key=lambda x: (x[TX_MERCHANT_KEY], x[TX_DATE_KEY])
@@ -620,7 +673,7 @@ class TxData:
         
         except Exception as e:
            print(f"\nUnexpected  error occurred: \n")
-           #from https://docs.python.org/3/tutorial/errors.html:
+           # from https://docs.python.org/3/tutorial/errors.html:
            print(type(e))    # the exception type
            return False 
 
@@ -660,31 +713,30 @@ def main():
     RAW_DATA_WSHEET = get_imported_csv_wsheet(SHEET)
     print(f"Great! RET connected to your Google Worksheet: {RAW_DATA_WSHEET.title}.\n")
 
-    #import raw transaction data from the worksheet
+    # import raw transaction data from the worksheet
     selected_raw_tx_data = []
     selected_raw_tx_data = import_raw_data(RAW_DATA_WSHEET)
     print("The raw transaction data has been successfully imported.\n")
     
-    #let's start the data analysis
-    #instantiate the class
+    # let's start the data analysis
+    # instantiate the class
     tx_data = TxData(selected_raw_tx_data)
 
-    tx_data.print_data(10, "raw", True)
+    tx_data.print_data(5, "raw", False)
     message = "\nDoes the data look right and do you want to continue? (y/n):\n"
     if not do_you_want_to_continue(message):
         print("Goodbye!")
         return
     
-    #clean up the tx data row by row
+    # clean up the tx data row by row
     print("Cleaning up the transaction data...")
     tx_data.clean_up_tx_data()
 
-    #sort the raw data
+    # sort the raw data
     print("Sorting the transaction data...")
     tx_data.sorted_clean_data = tx_data.sort_data(tx_data.clean_tx_data)
-    #tx_data.print_data(0, "sorted", True)
 
-    #upload the data to the worksheet
+    # upload the data to the worksheet
     if not upload_data_to_worksheet(SHEET, "SORTED TX DATA", tx_data.sorted_clean_data):
         print("an error occurred while uploading the data to the Google Sheet.")
     
