@@ -516,7 +516,8 @@ class TxData:
         If sorted use the sorted data, otherwise use the selected_raw_data
         """
         for i in range(number_of_rows):
-            print(data[i])
+            #tx_date = data[i][TX_DATE_KEY]
+            print(f"{data[i][TX_DATE_KEY]} | {data[i][TX_DATE_KEY].day} | {data[i][TX_MERCHANT_KEY]} | {data[i][TX_AMOUNT_KEY]}")
 
 
     def analyze_data(self):
@@ -562,16 +563,16 @@ def main():
     #instantiate the class
     tx_data = TxData(selected_raw_tx_data)
 
-    print("Here are the first 5 records:\n")
-    tx_data.print_data(5, tx_data.selected_raw_tx_data)
-    message = "\nDoes the data look right and doyou want to continue? (y/n):\n"
-    if not do_you_want_to_continue(message):
-        print("Goodbye!")
-        return
+    #print("Here are the first 5 records:\n")
+    #tx_data.print_data(5, tx_data.selected_raw_tx_data)
+    #message = "\nDoes the data look right and doyou want to continue? (y/n):\n"
+    #if not do_you_want_to_continue(message):
+    #    print("Goodbye!")
+    #    return
     
     #let's clean the console window.
     #copied from: https://www.sololearn.com/en/Discuss/3220821/how-how-to-delete-printed-text
-    #os.system('cls' if os.name == 'nt' else 'clear')
+    os.system('cls' if os.name == 'nt' else 'clear')
 
     #clean up the tx data row by row
     tx_data.clean_up_tx_data()
@@ -580,7 +581,7 @@ def main():
     #sort the raw data
     tx_data.sorted_clean_data = tx_data.sort_data(tx_data.clean_tx_data)
     print("The data has been cleaned up and sorted. Here are the first 15 transactions:\n")
-    tx_data.print_data(15, tx_data.sorted_clean_data)
+    tx_data.print_data(90, tx_data.sorted_clean_data)
 
 
 
