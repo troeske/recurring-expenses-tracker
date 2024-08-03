@@ -5,7 +5,7 @@ from datetime import datetime
 from dateutil import parser
 import re
 import os
-
+import locale
 
 
 # love sandwiches example used as baseline
@@ -373,6 +373,17 @@ def clean_console():
 
     os.system('cls' if os.name == 'nt' else 'clear')
 
+def convert_datetime_object_to_str(tx_date):
+    """
+    Convert tx_date into a string using the local setting. Outline provided by ChatGPT
+    """
+    locale.setlocale(locale.LC_TIME, '')
+    # Convert datetime to local date format
+    local_date = tx_date.strftime(locale.nl_langinfo(locale.D_FMT))
+    
+    return local_date
+
+
 def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
     """
     create a new worksheet with worksheet_name in spreadsheet and
@@ -393,7 +404,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
 
         # then the data
         for row in data:
-            ws_output.append_row([row[ROW_KEY], row[TX_DATE_KEY], row[TX_MERCHANT_KEY], row[TX_AMOUNT_KEY]])
+            ws_output.append_row([row[ROW_KEY], convert_datetime_object_to_str(row[TX_DATE_KEY]), row[TX_MERCHANT_KEY], row[TX_AMOUNT_KEY]])
         
         print(f"The data has been successfully uploaded to:\nSpreadsheet: {spreadsheet.title} worksheet: {worksheet_name}.")
         return True
