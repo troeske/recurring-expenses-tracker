@@ -401,11 +401,11 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
         # filling in the data
 
         # first the headings
-        ws_output.insert_row(["Original Row",TX_DATE_KEY, TX_MERCHANT_KEY, TX_AMOUNT_KEY], 1)
+        ws_output.insert_row([TX_DATE_KEY, TX_MERCHANT_KEY, TX_AMOUNT_KEY], 1)
 
         # then the data
         for row in data:
-            ws_output.append_row([row[ROW_KEY], convert_datetime_object_to_str(row[TX_DATE_KEY]), row[TX_MERCHANT_KEY], row[TX_AMOUNT_KEY]])
+            ws_output.append_row([convert_datetime_object_to_str(row[TX_DATE_KEY]), row[TX_MERCHANT_KEY], row[TX_AMOUNT_KEY]])
         
         print(f"\nThe data has been successfully uploaded to Spreadsheet: \n{spreadsheet.title} | worksheet: {worksheet_name}.")
         return True
