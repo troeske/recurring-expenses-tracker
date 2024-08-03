@@ -446,7 +446,6 @@ class TxData:
     """
     # we need some class constants for the date format as this seems to be quite messy
     DATE_FORMAT_DAY_FIRST = True
-    DATE_FORMAT = "%d.%m.%Y"
 
     def __init__(self, selected_raw_tx_data):
         self.selected_raw_tx_data = selected_raw_tx_data
