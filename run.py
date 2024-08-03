@@ -41,11 +41,13 @@ def intro_go_on():
     print("If you already have one please select option 2. below.\n")
     print("Let's get started!\n")
 
-    go_on = input("Do you want to continue? \
-                  \nPress: \
-                  \n1 to create a new Spreadsheet \
-                  \n2 for re-using one previsously created (through RET or by you) \
-                  \nAny other key to EXIT:\n")
+    print("How do you want to continue?\n \
+        \nPress \
+        \n1: to create a new Spreadsheet \
+        \n2: for re-using one previsously created (through RET or by you) \
+        \nAny other key to EXIT:")
+    
+    go_on = input("\n")
 
     if go_on == "1":
         return 1
@@ -58,9 +60,6 @@ def get_user_email():
     """
     Get user email from the user
     """
-   
-    print("\n")
-
     user_email = input("Enter your email address: ")
     while not validate_email(user_email):
         print("The email address you entered is not a valid email address. Please try again.")
@@ -104,18 +103,18 @@ def get_existing_spreadsheet():
     Open an a spreadsheet that was created through RET
     Return: the Spreadsheet object that the user wants to open
     """
-    existing_ssheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
+    existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
     
     # loop as long user entered empty string
-    while existing_ssheet =="":
-        existing_ssheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
+    while existing_s_sheet =="":
+        existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
     
     # let's try to open the spreadsheet
-    spreadsheet = open_existing_spreadsheet(existing_ssheet)
+    spreadsheet = open_existing_spreadsheet(existing_s_sheet)
     while not spreadsheet:
         # seems user input isn't correct, so let's ask again
-        existing_ssheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
-        spreadsheet = open_existing_spreadsheet(existing_ssheet)
+        existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
+        spreadsheet = open_existing_spreadsheet(existing_s_sheet)
     
     # all good now so let's return the worksheet
     return spreadsheet
@@ -189,13 +188,15 @@ def get_imported_csv_wsheet(spreadsheet):
     prompts the user to import  the CSV file to a Google Worksheet and privde it's name
     returns: the worksheet that the user imported the CSV file to
     """
-    print(f"\nNow, please imnport your CSV file to the Google Sheet: '{spreadsheet.title}', RET just created or opened.")
+    print(f"Now, please imnport your CSV file to the Google Sheet: '{spreadsheet.title}', RET just created or opened.")
     print("You can do this by clicking on the 'File' menu in the Google Sheet and selecting 'Import'.")
     
     wait_for_user("Have you imported the CSV file to the Google Sheet? (y/n): ")
 
-    ws_name = input("Please enter the worksheet name where you imported the CSV file.\
-    You can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet\n")
+    clean_console()
+
+    print(f"You are working with the Google Sheet: '{spreadsheet.title}'")
+    ws_name = input("\nPlease enter the worksheet name where you imported the CSV file. You can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet:\n")
     
     # loop as long user entered empty string
     while ws_name =="":
@@ -286,6 +287,8 @@ def import_raw_data(raw_data_wsheet):
     Import the raw transaction data from the worksheet where the user imported his/her CSV file into a list of lists
     Return: the list of lists with the raw transaction data 
     """
+    # let's start clean
+    selected_tx_data = []
 
     # let's start with the row where the transaction data starts
     input_message = "\nPlease enter the row number \nwhere the transaction data starts (e.g. 1, 2, 3, etc.):\n"
@@ -322,12 +325,12 @@ def import_raw_data(raw_data_wsheet):
     tx_amount_col -= 1
 
 
-    print(f"\nTHANK YOU! RET is now importing your raw transaction data from the worksheet: \n{raw_data_wsheet.title}.")
+    print(f"\nRET is now importing your raw transaction data from the worksheet: {raw_data_wsheet.title}.")
     print("This may take a few seconds depending on the size of the data.\n")
     print("Please wait...\n")
 
     raw_tx_data = raw_data_wsheet.get_all_values()
-    
+
     # we need to loop through the list of lists and extract the rows and columns that the user specified and create a list of dfictionaries
     selected_tx_data = []
 
@@ -402,7 +405,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
         for row in data:
             ws_output.append_row([row[ROW_KEY], convert_datetime_object_to_str(row[TX_DATE_KEY]), row[TX_MERCHANT_KEY], row[TX_AMOUNT_KEY]])
         
-        print(f"The data has been successfully uploaded to:\nSpreadsheet: {spreadsheet.title} worksheet: {worksheet_name}.")
+        print(f"\nThe data has been successfully uploaded to Spreadsheet: \n{spreadsheet.title} | worksheet: {worksheet_name}.")
         return True
     
     except APIError as e:
@@ -459,7 +462,8 @@ class TxData:
         because it is a day then it just switches and takes the smaler value as the month
         Sets the class constant DATE_FORMAT_DAY_FIRST to True or False
         """
-        
+        print("\nChecking the date format of the input data...\n")
+
         for row in data:
             date_str = row[TX_DATE_KEY]
             
@@ -473,13 +477,11 @@ class TxData:
                 
                 # Extract day, month, and year from the matched groups provided by ChatGPT
                 day, month, year = map(int, match.groups())
-                print(f"raw: {date_str} | day: {day} | month: {month} | year: {year}")
 
                 if month > 12:
                     # seems the date format is not day first but month first, so let's set the class constant and exit
                     self.DATE_FORMAT_DAY_FIRST = False
-                    print("\nThe date format is not day first.\n")
-                    print(f"raw: {date_str} | day: {month} | month: {day} | year: {year}")
+                    print("\nSWITCHING DATE FORMAT TO MONTH FIRST\n")
                     return
             
             except ValueError:
@@ -689,12 +691,14 @@ def main():
     Run the main program
     """
     mode = intro_go_on()
-
+    
     if not mode:
         print("Goodbye!")
         return
     
     elif mode == 1:    
+        clean_console()
+        
         user_email = get_user_email()
         print(user_email)
 
@@ -703,37 +707,47 @@ def main():
         print("You can access your worksheet at the following link:\n")
         print(SHEET.url)
 
+        wait_for_user("Have you opened the Google Sheet? (y/n): ")
+
     elif mode == 2:
+        clean_console()
+        
         SHEET = get_existing_spreadsheet()
-        print(f"Great! We have successfully opened the Google Spreadsheet: {SHEET.title}.\n")
+        print(f"RET has successfully opened the Google Spreadsheet: {SHEET.title}.\n")
 
     clean_console()
 
     # regardless if user created a new sheet or re-used on, we  we are now ready to ask the user to import the CSV file    
     RAW_DATA_WSHEET = get_imported_csv_wsheet(SHEET)
-    print(f"Great! RET connected to your Google Worksheet: {RAW_DATA_WSHEET.title}.\n")
+    print(f"\nRET succesfully connected to your Google Worksheet: {RAW_DATA_WSHEET.title}.\n")
 
     # import raw transaction data from the worksheet
-    selected_raw_tx_data = []
     selected_raw_tx_data = import_raw_data(RAW_DATA_WSHEET)
+        
     print("The raw transaction data has been successfully imported.\n")
     
     # let's start the data analysis
     # instantiate the class
     tx_data = TxData(selected_raw_tx_data)
-
-    tx_data.print_data(5, "raw", False)
-    message = "\nDoes the data look right and do you want to continue? (y/n):\n"
-    if not do_you_want_to_continue(message):
-        print("Goodbye!")
-        return
     
+    tx_data.print_data(10, "raw", True)
+    if input("\nDo you want to continue with the data? (y/n):\n") != "y":
+        print(f"\nOK, please check '{RAW_DATA_WSHEET.title}' and let's try again")
+        # we need to delete the instance of the TxData class first
+        del tx_data
+        selected_raw_tx_data = import_raw_data(RAW_DATA_WSHEET)
+        # let's start the data analysis again
+        # instantiate the class again
+        tx_data = TxData(selected_raw_tx_data)
+    
+    clean_console()
+
     # clean up the tx data row by row
-    print("Cleaning up the transaction data...")
+    print("Cleaning up the imported transaction data...")
     tx_data.clean_up_tx_data()
 
-    # sort the raw data
-    print("Sorting the transaction data...")
+    # sort the cleaned data
+    print("Sorting the cleaned transaction data...")
     tx_data.sorted_clean_data = tx_data.sort_data(tx_data.clean_tx_data)
 
     # upload the data to the worksheet
