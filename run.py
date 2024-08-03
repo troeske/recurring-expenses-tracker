@@ -30,7 +30,9 @@ def intro_go_on():
     """
     Display the intro message
     """
-    print("\nWelcome to the Recurring Expense Tracker: RET!\n")
+    clean_console()
+
+    print("Welcome to the Recurring Expense Tracker: RET!\n")
     print("You can import your bank account and/or credit card transaction data into RET.")
     print("RET will sort through all the transaction data and provide you with")
     print("a list of recurring expenses and subscriptions.\n")
@@ -388,14 +390,14 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
     create a new worksheet with worksheet_name in spreadsheet and
     upload the data to the selected worksheet
     """
-    print("starting the data upload to Google Sheets...")
+    print("\nStarting the data upload to Google Sheets...")
 
     try:
-        print("creating new worksheet...")
+        print("Creating new worksheet...")
         # creating the worksheet
         ws_output = spreadsheet.add_worksheet(title=worksheet_name, rows=1, cols=10)
         
-        print("uploading the data...")
+        print("Uploading the data...")
         # filling in the data
 
         # first the headings
@@ -410,7 +412,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
     
     except APIError as e:
         if e.response.status_code == 400:
-            print(f"\nA worksheet with the name '{worksheet_name}' already exists in the spreadsheet: {spreadsheet.title}.")
+            print(f"\nA worksheet with the name '{worksheet_name}' already exists in the spreadsheet: '{spreadsheet.title}'.")
             new_worksheet_name = input("Please enter a different name for the worksheet:\n")
             # let's call this function recursively to get things done with a new name for the worksheet
             if upload_data_to_worksheet(spreadsheet, new_worksheet_name, data):
@@ -451,7 +453,6 @@ class TxData:
 
         self.sorted_clean_data = []
         self.clean_tx_data = []
-        # self.selected_raw_tx_data = []
 
         # let's check the date format of the input data
         self.check_date_format(self.selected_raw_tx_data)
@@ -649,14 +650,20 @@ class TxData:
             if what_data == "raw":
                 if number_of_rows == 0:
                     number_of_rows = len(self.selected_raw_tx_data)
+                
+                print(f"Row| Date   | Merchant/Recepient       | Amount\n")
 
             elif what_data == "clean":
                 if number_of_rows == 0:
                     number_of_rows = len(self.clean_tx_data)
+                
+                print(f"Row| Date   | Merchant/Recepient       | Amount\n")
             
             elif what_data == "sorted":
                 if number_of_rows == 0:
                     number_of_rows = len(self.sorted_clean_data)
+                
+                print(f"Row| Date   | DAY | Merchant/Recepient        | Amount\n")
             
             else:
                 print("print mode not supported\n")
