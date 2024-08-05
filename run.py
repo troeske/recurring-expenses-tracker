@@ -1,9 +1,9 @@
 import gspread
-from gspread_formatting import *
+from gspread_formatting import format_cell_range, CellFormat, TextFormat
 from gspread.exceptions import SpreadsheetNotFound, GSpreadException, APIError
 from google.oauth2.service_account import Credentials
 from datetime import datetime
-from dateutil import parser
+#from dateutil import parser
 import re
 import os
 import calendar
@@ -394,7 +394,7 @@ def format_row_in_worksheet(worksheet, row, type):
     outline provided by ChatGPT
     """
     # Define the range of the last row (e.g., A10:D10 for 4 columns)
-    cell_range = f"'{row}'"
+    cell_range = f"A{row}:F{row}"
 
     if type == "bold":
         # Apply bold formatting to the row
@@ -403,7 +403,58 @@ def format_row_in_worksheet(worksheet, row, type):
     if type == "normal":
         # Apply bold formatting to the row
         format_cell_range(worksheet, cell_range, CellFormat(textFormat=TextFormat(bold=False)))
+
+def append_and_format_row(ws_output, row_data, format_type):
+    """
+    Append a new row to the worksheet and format it
+    """
+    # Handle empty row data
+    if not row_data or row_data == [""]:
+        row_data = [" ", " ", " "] 
     
+    ws_output.append_row(row_data)
+    # Get the row count after appending the new row
+    new_row_index = len(ws_output.get_all_values())
+    format_row_in_worksheet(ws_output, new_row_index, format_type)
+
+def append_dataset_headings(ws_output, dataset):
+    """
+    Append the headings of the dataset to the worksheet
+    """
+    keys_list = list(dataset[0].keys())
+    append_and_format_row(ws_output, keys_list, "bold")
+    append_and_format_row(ws_output, [""], "normal")
+
+def append_dataset1_rows(ws_output, dataset):
+    """
+    Append the rows of dataset1 to the worksheet
+    """
+    for row in dataset:
+        ws_output.append_row([
+            row[TX_MERCHANT_KEY],
+            row["subs_day"],
+            row[TX_AMOUNT_KEY],
+            convert_datetime_object_to_str(row["subs_start_date"]),
+            convert_datetime_object_to_str(row["subs_end_date"]),
+            row["subs_frequency"],
+            row["subs_merchant_sum"],
+            row["num_subs_tx"],
+            str(row["active"])
+        ], value_input_option='USER_ENTERED')
+
+def append_dataset2_rows(ws_output, dataset):
+    """
+    Append the rows of dataset2 to the worksheet
+    """
+    for row in dataset:
+        ws_output.append_row([
+            row[TX_MERCHANT_KEY],
+            convert_datetime_object_to_str(row["last_tx_date"]),
+            convert_datetime_object_to_str(row["first_tx_date"]),
+            row["last_tx_amount"],
+            row["merchant_sum"],
+            row["num_tx"]
+        ], value_input_option='USER_ENTERED')
 
 def upload_results_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, dataset1, heading_dataset2, dataset2, start_date, end_date):
     """
@@ -422,71 +473,32 @@ def upload_results_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, d
         
         # filling in the data
         if dataset1:
-            # let's insert a heading for dataset1 
-            ws_output.append_row([heading_dataset1], insert_data_option ='OVERWRITE')
-            # format the row we just added
-            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
-            ws_output.append_row(["Start-Date", convert_datetime_object_to_str(start_date)], insert_data_option ='OVERWRITE')
-            # format back to normal
-            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "normal")
-            ws_output.append_row(["End-Date", convert_datetime_object_to_str(end_date)], insert_data_option ='OVERWRITE')
-            ws_output.append_row([""], insert_data_option ='OVERWRITE')
+            # Insert heading for dataset1
+            append_and_format_row(ws_output, [""], "normal")
+            append_and_format_row(ws_output, [heading_dataset1], "bold")
+            append_and_format_row(ws_output, ["Start-Date", convert_datetime_object_to_str(start_date)], "normal")
+            append_and_format_row(ws_output, ["End-Date", convert_datetime_object_to_str(end_date)], "normal")
+            append_and_format_row(ws_output, [""], "normal")
             
-            keys_list_dataset1 = list(dataset1[0].keys())
-            # now first the headings
-            ws_output.append_row(keys_list_dataset1, insert_data_option ='OVERWRITE')
-            # format the row we just added
-            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
+            # Append dataset headings
+            append_dataset_headings(ws_output, dataset1)
             
-            ws_output.append_row([""], insert_data_option ='OVERWRITE')
-            # format back to normal
-            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "normal")
-            
-            for row in dataset1:
-                ws_output.append_row([
-                                    row[TX_MERCHANT_KEY],
-                                    row["subs_day"],
-                                    row[TX_AMOUNT_KEY],
-                                    convert_datetime_object_to_str(row["subs_start_date"]),
-                                    convert_datetime_object_to_str(row["subs_end_date"]),
-                                    row["subs_frequency"],
-                                    row["subs_merchant_sum"],
-                                    row["num_subs_tx"],
-                                    str(row["active"])
-                                    ], value_input_option='USER_ENTERED', insert_data_option ='OVERWRITE')
+            # Append dataset rows
+            append_dataset1_rows(ws_output, dataset1)
         
         if dataset2:
-            # let's insert an empty row to separate from dataset1
-            ws_output.append_row([""], insert_data_option ='OVERWRITE')
-
-            # let's insert a heading for dataset2
-            ws_output.append_row([heading_dataset2], insert_data_option ='OVERWRITE')
-            # format the row we just added
-            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
-            ws_output.append_row(["Start-Date", convert_datetime_object_to_str(start_date)], insert_data_option ='OVERWRITE')
-             # format back to normal
-            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "normal")
-            ws_output.append_row(["Start-Date", convert_datetime_object_to_str(end_date)], insert_data_option ='OVERWRITE')
-            ws_output.append_row([""], insert_data_option ='OVERWRITE')
+            # Insert heading for dataset1
+            append_and_format_row(ws_output, [""], "normal")
+            append_and_format_row(ws_output, [heading_dataset2], "bold")
+            append_and_format_row(ws_output, ["Start-Date", convert_datetime_object_to_str(start_date)], "normal")
+            append_and_format_row(ws_output, ["End-Date", convert_datetime_object_to_str(end_date)], "normal")
+            append_and_format_row(ws_output, [""], "normal")
             
-            keys_list_dataset2 = list(dataset2[0].keys())
-            # now first the headings
-            ws_output.append_row(keys_list_dataset2, insert_data_option ='OVERWRITE')
-            # format the row we just added
-            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
-            ws_output.append_row([""], insert_data_option ='OVERWRITE')
-            # format back to normal
-            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "normal")
+            # Append dataset headings
+            append_dataset_headings(ws_output, dataset2)
             
-            for row in dataset2:
-                ws_output.append_row([
-                                    row[TX_MERCHANT_KEY],
-                                    convert_datetime_object_to_str(row["last_tx_date"]),
-                                    convert_datetime_object_to_str(row["first_tx_date"]),
-                                    row["last_tx_amount"],
-                                    row["merchant_sum"],
-                                    row["num_tx"]
-                                    ], value_input_option='USER_ENTERED', insert_data_option ='OVERWRITE')
+            # Append dataset rows
+            append_dataset1_rows(ws_output, dataset1)
         
         print(f"\nThe data has been successfully uploaded to Spreadsheet: \n{spreadsheet.title} | worksheet: {worksheet_name}.")
         print(f"\nStart date of the dataset: {convert_datetime_object_to_str(start_date)} | End date: {convert_datetime_object_to_str(end_date)}\n")
