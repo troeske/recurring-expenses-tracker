@@ -342,7 +342,7 @@ def import_raw_data(raw_data_wsheet):
             continue
 
         new_row = {
-                    ROW_KEY: i, 
+                    ROW_KEY: i+1, 
                     TX_DATE_KEY: raw_tx_data[i][tx_date_col], 
                     TX_MERCHANT_KEY: raw_tx_data[i][tx_merchant_col],
                     TX_AMOUNT_KEY: raw_tx_data[i][tx_amount_col] 
@@ -385,7 +385,7 @@ def convert_datetime_object_to_str(tx_date):
     return local_date
 
 
-def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
+def upload_data_to_worksheet(spreadsheet, worksheet_name, data, start_date, end_date):
     """
     create a new worksheet with worksheet_name in spreadsheet and
     upload the data to the selected worksheet
@@ -397,7 +397,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
         # creating the worksheet
         ws_output = spreadsheet.add_worksheet(title=worksheet_name, rows=1, cols=10)
         
-        print("Uploading the data...")
+        print("Uploading the data. NOTE: this may take!...")
         # filling in the data
 
         # first the headings
@@ -408,6 +408,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
             ws_output.append_row([convert_datetime_object_to_str(row[TX_DATE_KEY]), row[TX_MERCHANT_KEY], row[TX_AMOUNT_KEY]])
         
         print(f"\nThe data has been successfully uploaded to Spreadsheet: \n{spreadsheet.title} | worksheet: {worksheet_name}.")
+        print(f"\nStart date of the dataset: {start_date} | End date: {end_date}\n")
         return True
     
     except APIError as e:
@@ -415,7 +416,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data):
             print(f"\nA worksheet with the name '{worksheet_name}' already exists in the spreadsheet: '{spreadsheet.title}'.")
             new_worksheet_name = input("Please enter a different name for the worksheet:\n")
             # let's call this function recursively to get things done with a new name for the worksheet
-            if upload_data_to_worksheet(spreadsheet, new_worksheet_name, data):
+            if upload_data_to_worksheet(spreadsheet, new_worksheet_name, data, start_date, end_date):
                 return True
             else:
                 return False
@@ -446,6 +447,8 @@ class TxData:
     """
     # we need some class constants for the date format as this seems to be quite messy
     DATE_FORMAT_DAY_FIRST = True
+    ANALYSIS_START_DATE = datetime(2000,1,1)
+    ANALYSIS_END_DATE = datetime.today()
 
     def __init__(self, selected_raw_tx_data):
         self.selected_raw_tx_data = selected_raw_tx_data
@@ -624,12 +627,14 @@ class TxData:
     def sort_data(self, data):
         """
         Sort the transaction data
-        Creates sorted_selected_raw_tx_data
+        Creates class attribute (list of dictionaries) sorted_selected_raw_tx_data
         """
-        # sort the data by merchant and date, learned from GeeksforGeeks
+        # sort the data by merchant and date in reverse order to look for active subscriptions, 
+        # learned from GeeksforGeeks/w3 schools
         sorted_data = sorted(
             data,
-            key=lambda x: (x[TX_MERCHANT_KEY], x[TX_DATE_KEY])
+            key=lambda x: (x[TX_MERCHANT_KEY], x[TX_DATE_KEY]), 
+            reverse=True
             )
         
         return sorted_data
@@ -685,10 +690,20 @@ class TxData:
            print(type(e))    # the exception type
            return False 
 
+    def get_analysis_time_frame(self):
+        """
+        Finds the date of the first and last transaction in the data set 
+        Sets class attribute ANALYSIS_START_DATE and ANALYSIS_END_DATE
+        """
+
+        ANALYSIS_END_DATE = self.sorted_clean_data[len(self.clean_tx_data)-1][TX_DATE_KEY]
+        ANALYSIS_START_DATE = self.sorted_clean_data[0][TX_DATE_KEY]
 
     def analyze_data(self):
-        """
+       """
         Analyze the transaction data
+        Expects sorted list by merchant and date in reverse order
+        Returns: sub_data
         """
 
 
@@ -756,8 +771,11 @@ def main():
     print("Sorting the cleaned transaction data...")
     tx_data.sorted_clean_data = tx_data.sort_data(tx_data.clean_tx_data)
 
+    #finding start and end date of dataset
+    tx_data.get_analysis_time_frame()
+
     # upload the data to the worksheet
-    if not upload_data_to_worksheet(SHEET, "SORTED TX DATA", tx_data.sorted_clean_data):
+    if not upload_data_to_worksheet(SHEET, "SORTED TX DATA", tx_data.sorted_clean_data, tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
         print("an error occurred while uploading the data to the Google Sheet.")
     
 
