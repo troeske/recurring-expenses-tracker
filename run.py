@@ -5,6 +5,7 @@ from datetime import datetime
 from dateutil import parser
 import re
 import os
+import calendar
 
 
 # love sandwiches example used as baseline
@@ -681,7 +682,7 @@ class TxData:
                 if number_of_rows == 0:
                     number_of_rows = len(self.subscriptions_data)
                 
-                print(f"Merchant/Recepient     | DAY | Amount   | Start   | End      | Sum      | Reps | Active | \n")
+                print(f"Merchant/Recepient     | DAY | Amount   | Start   | End      | Frequency | Sum      | Reps | Active | \n")
             
             elif what_data == "reccuring":
                 if number_of_rows == 0:
@@ -713,6 +714,7 @@ class TxData:
                           {self.subscriptions_data[i][TX_AMOUNT_KEY]} | \
                           {self.subscriptions_data[i]["subs_start_date"]} | \
                           {self.subscriptions_data[i]["subs_end_date"]} | \
+                          {self.subscriptions_data[i]["subs_frequency"]} | \
                           {self.subscriptions_data[i]["subs_merchant_sum"]} | \
                           {self.subscriptions_data[i]["num_subs_tx"]} | \
                           {str(self.subscriptions_data[i]["active"])}") 
@@ -739,7 +741,7 @@ class TxData:
         self.ANALYSIS_END_DATE = self.sorted_clean_data[len(self.clean_tx_data)-1][TX_DATE_KEY]
         self.ANALYSIS_START_DATE = self.sorted_clean_data[0][TX_DATE_KEY]
 
-    def merchant_not_in_list(self, data_list, tx_merchant):
+    def merchant_in_list(self, data_list, tx_merchant):
         """
         checks the subscription_data list to see if we already have an entry for this merchant
         As the list works like a stack with LIFO and given the base list ist sorted by merchant, the last enry is the only relevant 
@@ -760,18 +762,58 @@ class TxData:
                 
                 if last_merchant_in_list == tx_merchant:
                     #let's tell the calling method that we found it and what index is the last
-                    return False, tx_merchant_index
+                    return True, tx_merchant_index
                 else:
-                    return True, -1
+                    return False, -1
             else:
-                 return True, -1
+                 return False, -1
         
         except Exception as e:
            print(f"\nUnexpected  error occurred in merchant_not_in_list: \n")
            # from https://docs.python.org/3/tutorial/errors.html:
            print(type(e))    # the exception type
-           return True, -1 
+           return False, -1 
+    
+    def is_subscription(self, curr_tx_date, prev_tx_date, curr_tx_amount, prev_tx_amount):
+        """
+        checks if the recurring transaction at a merchant is to be considered a subscription. 
+        Subscriptions happen on or close to the same day +- SUBS_DAY_FLEX  AND
+        the amount is +- SUBS_AMOUNT_FLEX the same
 
+        Returns:
+        True: if it is a subscription
+        False: if it is a another purchase at the same merchant
+        """
+        
+        # let's make sure we stay in the same months when comparing the dates
+        # from: https://www.askpython.com/python/examples/find-number-of-days-in-month
+        prev_day = prev_tx_date.day
+        num_days = calendar.monthrange(prev_tx_date.year, prev_tx_date.month)[1]
+
+        if prev_day - SUBS_DAY_FLEX <= 0:
+            prev_day = 1
+        elif prev_day + SUBS_DAY_FLEX >= num_days:
+            prev_day = num_days
+
+
+        if curr_tx_amount >= prev_tx_amount - SUBS_AMOUNT_FLEX and curr_tx_amount <= prev_tx_amount + SUBS_AMOUNT_FLEX \
+           and \
+           curr_tx_date.day >= prev_day - SUBS_DAY_FLEX and curr_tx_date.day <= prev_day + SUBS_DAY_FLEX:
+            
+            days_between_tx = curr_tx_date - prev_tx_date
+            if days_between_tx >= 30 - SUBS_DAY_FLEX and days_between_tx <= 30 + SUBS_DAY_FLEX:
+                subs_frequency = "monthly"
+            
+            elif days_between_tx >= 91 - SUBS_DAY_FLEX and days_between_tx <= 91 + SUBS_DAY_FLEX:
+                subs_frequency = "quartely"
+            
+            elif days_between_tx >= 365 - SUBS_DAY_FLEX and days_between_tx <= 365 + SUBS_DAY_FLEX:
+                subs_frequency = "yearly"
+
+            return True, subs_frequency
+        else:
+            return False
+        
     def analyze_data(self):
         """
         Analyze the transaction data
@@ -785,7 +827,7 @@ class TxData:
             
             # setting the baseline for the first loop. These values will be updated as we go through the list and are working backwards in time:
             prev_tx_merchant = self.sorted_clean_data[0][TX_MERCHANT_KEY]
-            prev_tx_day = int(self.sorted_clean_data[0][TX_DATE_KEY].day)
+            prev_tx_date = self.sorted_clean_data[0][TX_DATE_KEY]
             prev_tx_amount = round(self.sorted_clean_data[0][TX_AMOUNT_KEY],2)
             total_sum = round(self.sorted_clean_data[0][TX_AMOUNT_KEY], 2)
             merchant_sum = round(self.sorted_clean_data[0][TX_AMOUNT_KEY],2)
@@ -799,7 +841,6 @@ class TxData:
                 # let's make this loop as easy readable as possible by setting readable var names 
                 curr_tx_merchant = self.sorted_clean_data[i][TX_MERCHANT_KEY]
                 curr_tx_date = self.sorted_clean_data[i][TX_DATE_KEY]
-                curr_tx_day = self.sorted_clean_data[i][TX_DATE_KEY].day
                 curr_tx_amount = self.sorted_clean_data[i][TX_AMOUNT_KEY]
                 
                 total_sum += curr_tx_amount
@@ -811,10 +852,8 @@ class TxData:
                     # updating the total sum for this merchant
                     num_merchant_tx += 1   
 
-                    # check if tx amount is the same +- minor fluctuations: SUBS_AMOUNT_FLEX
-                    if curr_tx_amount >= prev_tx_amount - SUBS_AMOUNT_FLEX and curr_tx_amount <= prev_tx_amount + SUBS_AMOUNT_FLEX:
-                        # check if it tx happened on the same day +- SUBS_DAY_FLEX to allow for weekenends and bankholidays
-                        if curr_tx_day >= prev_tx_day - SUBS_DAY_FLEX and curr_tx_day <= prev_tx_day + SUBS_DAY_FLEX:
+                    is_subscription, subs_frequency = self.is_subscription(curr_tx_date, prev_tx_date, curr_tx_amount, prev_tx_amount)
+                    if is_subscription:
                             #### EUREKA we have ourselves a subscritpion  ####
 
                             # let's check if the subscription was active at the end of the period of the dataset
@@ -824,15 +863,16 @@ class TxData:
                                 subs_active = False
                             
                             # let's check if this merchant already exists in the subscription_data list
-                            is_not_in, index = self.merchant_not_in_list(self.subscriptions_data, curr_tx_merchant)
-                            if is_not_in:
-                                # build a new entry to the subscriptions_data list
+                            merchant_in_subs, subs_index = self.merchant_in_list(self.subscriptions_data, curr_tx_merchant)
+                            if not merchant_in_subs:
+                                # ok, it's a subscription but we do not have the merchant in the subs list yet, so let's build a new entry to the subscriptions_data list
                                 new_subs_list_entry = {
                                                     TX_MERCHANT_KEY: curr_tx_merchant, 
-                                                    "subs_day": curr_tx_day, # subscriptions should happen around the same day so let's save curent tx date and update further as we work backwords in time
+                                                    "subs_day": curr_tx_date.day, # subscriptions should happen around the same day so let's save curent tx date and update further as we work backwords in time
                                                     TX_AMOUNT_KEY: merchant_last_amount_paid, # as the entries in the list get older this is the last amount paid and will not get updated
                                                     "subs_start_date": curr_tx_date, # will be updated further as we work backwords in time
                                                     "subs_end_date": merchant_last_date, # as the entries in the list get older this is the last date the subscription was paid and will not get updated
+                                                    "subs_frequency": subs_frequency,
                                                     "subs_merchant_sum": merchant_sum,
                                                     "num_subs_tx": num_merchant_tx,
                                                     "active": subs_active 
@@ -842,18 +882,40 @@ class TxData:
 
                             else:
                                 # merchant has already been saved to the list previously, so let's update the appropriate dictionary entry in the list with the new values. 
-                                self.subscriptions_data[index]["subs_start_date"] = curr_tx_date # as the tx_dates get older let's update the start_date to what we know in this loop
-                                self.subscriptions_data[index]["subs_day"] = curr_tx_day # update further as we work backwords in time
-                                self.subscriptions_data[index]["subs_merchant_sum"] = merchant_sum
-                                self.subscriptions_data[index]["num_subs_tx"] = num_merchant_tx 
-                                self.subscriptions_data[index]["active"] = True
+                                self.subscriptions_data[subs_index]["subs_start_date"] = curr_tx_date # as the tx_dates get older let's update the start_date to what we know in this loop
+                                self.subscriptions_data[subs_index]["subs_day"] = curr_tx_date.day # update further as we work backwords in time
+                                self.subscriptions_data[subs_index]["subs_merchant_sum"] = merchant_sum
+                                self.subscriptions_data[subs_index]["num_subs_tx"] = num_merchant_tx 
+                                self.subscriptions_data[subs_index]["active"] = True
+
+                    elif merchant_in_subs:
+                        # ok this merchant is in subscriptions but the subscription amount has changed more then SUBS_AMOUNT_FLEX allows
+                        # let's treat this as a new subscription and make a new entry in the list
                         
+                        # restartiung the  total sum for this new subscription at the merchant
+                        merchant_sum = curr_tx_amount 
+                        # let's restart the count how many times we shopped at that merchant
+                        num_merchant_tx = 1   
+
+                        new_subs_list_entry = {
+                                            TX_MERCHANT_KEY: curr_tx_merchant, 
+                                            "subs_day": curr_tx_date.day, # subscriptions should happen around the same day so let's save curent tx date and update further as we work backwords in time
+                                            TX_AMOUNT_KEY: curr_tx_amount, # we have a new subscription with an exiting subscription merchant so let's use the new amount as baseline 
+                                            "subs_start_date": curr_tx_date, # will be updated further as we work backwords in time
+                                            "subs_end_date": curr_tx_date, # as the entries in the list get older this is the last date the subscription was paid and will not get updated
+                                            "subs_merchant_sum": merchant_sum,
+                                            "num_subs_tx": num_merchant_tx,
+                                            "active": subs_active 
+                                            }
+                        # let's add the merchant to the list
+                        self.subscriptions_data.append(new_subs_list_entry)
+                    
                     else:
                         # merchant is recurring but not on the same/simlar day and the amounts are not the same/similar
                         
                         # let's check if this merchant already exists in the recurring_merchant list
-                        is_not_in, index = self.merchant_not_in_list(self.recurring_merchants_data, curr_tx_merchant) 
-                        if is_not_in:
+                        merchant_in_rec, rec_index = self.merchant_in_list(self.recurring_merchants_data, curr_tx_merchant) 
+                        if not merchant_in_rec:
                             # build a new entry to the subscriptions_data list
                             new_merchands_list_entry = {
                                                 TX_MERCHANT_KEY: curr_tx_merchant,
@@ -869,20 +931,23 @@ class TxData:
 
                         else:
                             # merchant has already been saved to the list previously, so let's update the appropriate entry in the list with the new values as we go back in time. 
-                            self.recurring_merchants_data[index]["first_tx_date"] = curr_tx_date
-                            self.recurring_merchants_data[index]["merchant_sum"] = merchant_sum
-                            self.recurring_merchants_data[index]["num_tx"] = num_merchant_tx
+                            self.recurring_merchants_data[rec_index]["first_tx_date"] = curr_tx_date
+                            self.recurring_merchants_data[rec_index]["merchant_sum"] = merchant_sum
+                            self.recurring_merchants_data[rec_index]["num_tx"] = num_merchant_tx
                 else:
                     # let's reset the counters for a new merchant
                     merchant_sum = curr_tx_amount 
                     num_merchant_tx = 1
                     merchant_last_date = self.sorted_clean_data[i][TX_DATE_KEY]
-                    merchant_last_amount_paid = round(self.sorted_clean_data[i][TX_AMOUNT_KEY], 2)    
+                    merchant_last_amount_paid = round(self.sorted_clean_data[i][TX_AMOUNT_KEY], 2) 
+                    merchant_in_subs = False
+                    merchant_in_rec = False
                 
                 # Let's make the current the previous before the next loop
                 prev_tx_merchant = curr_tx_merchant
-                prev_tx_day = curr_tx_day
                 prev_tx_amount = curr_tx_amount
+                prev_tx_date = curr_tx_date
+
             
         except Exception as e:
             print(f"\nUnexpected  error occurred in analyze_data: \n")
