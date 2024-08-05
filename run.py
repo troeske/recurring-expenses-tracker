@@ -1,4 +1,5 @@
 import gspread
+from gspread_formatting import *
 from gspread.exceptions import SpreadsheetNotFound, GSpreadException, APIError
 from google.oauth2.service_account import Credentials
 from datetime import datetime
@@ -387,11 +388,24 @@ def convert_datetime_object_to_str(tx_date):
     
     return local_date
 
+def format_row_in_worksheet(worksheet, row, type):
+    """
+    formatting a row in worksheet
+    outline provided by ChatGPT
+    """
+    # Define the range of the last row (e.g., A10:D10 for 4 columns)
+    cell_range = f"'{row}'"
 
-def upload_data_to_worksheet(spreadsheet, worksheet_name, data, start_date, end_date):
+    if type == "bold":
+        # Apply bold formatting to the row
+        format_cell_range(worksheet, cell_range, CellFormat(textFormat=TextFormat(bold=True)))
+    
+
+def upload_data_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, dataset1, heading_dataset2, dataset2, start_date, end_date):
     """
     create a new worksheet with worksheet_name in spreadsheet and
     upload the data to the selected worksheet
+    function can handle max two datasets. Each one is optional
     """
     print("\nStarting the data upload to Google Sheets...")
 
@@ -401,14 +415,46 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data, start_date, end_
         ws_output = spreadsheet.add_worksheet(title=worksheet_name, rows=1, cols=10)
         
         print("Uploading the data. NOTE: this may take a while - please be patient!...")
+        
         # filling in the data
+        if dataset1:
+            # let's insert a heading for dataset1 
+            ws_output.append_row(heading_dataset1, insert_data_option ='OVERWRITE')
+            # format the row we just added
+            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
+            ws_output.append_row(["Start-Date", start_date], insert_data_option ='OVERWRITE')
+            ws_output.append_row(["Start-Date", end_date], insert_data_option ='OVERWRITE')
+            ws_output.append_row("", insert_data_option ='OVERWRITE')
+            
+            keys_list_dataset1 = list(dataset1[0].keys())
+            # now first the headings
+            ws_output.append_row(keys_list_dataset1, insert_data_option ='OVERWRITE')
+            # format the row we just added
+            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
+            # then the data
+            ws_output.append_rows(dataset1, value_input_option='USER_ENTERED', insert_data_option ='OVERWRITE')
+        
+        if dataset2:
+            # let's insert an empty row to separate from dataset1
+            ws_output.append_row("", insert_data_option ='OVERWRITE')
 
-        # first the headings
-        ws_output.insert_row([TX_DATE_KEY, TX_MERCHANT_KEY, TX_AMOUNT_KEY], 1)
+            # let's insert a heading for dataset2
+            ws_output.append_row(heading_dataset2, insert_data_option ='OVERWRITE')
+            # format the row we just added
+            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
+            ws_output.append_row(["Start-Date", start_date], insert_data_option ='OVERWRITE')
+            ws_output.append_row(["Start-Date", end_date], insert_data_option ='OVERWRITE')
+            ws_output.append_row("", insert_data_option ='OVERWRITE')
+            
+            keys_list_dataset2 = list(dataset1[0].keys())
+            # now first the headings
+            ws_output.append_row(keys_list_dataset2, insert_data_option ='OVERWRITE')
+            # format the row we just added
+            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
+            # then the data
+            ws_output.append_rows(dataset2, value_input_option='USER_ENTERED', insert_data_option ='OVERWRITE')
 
-        # then the data
-        for row in data:
-            ws_output.append_row([convert_datetime_object_to_str(row[TX_DATE_KEY]), row[TX_MERCHANT_KEY], row[TX_AMOUNT_KEY]])
+        
         
         print(f"\nThe data has been successfully uploaded to Spreadsheet: \n{spreadsheet.title} | worksheet: {worksheet_name}.")
         print(f"\nStart date of the dataset: {convert_datetime_object_to_str(start_date)} | End date: {convert_datetime_object_to_str(end_date)}\n")
@@ -947,6 +993,8 @@ class TxData:
                 prev_tx_merchant = curr_tx_merchant
                 prev_tx_amount = curr_tx_amount
                 prev_tx_date = curr_tx_date
+            
+            return self.recurring_merchants_data, self.subscriptions_data
 
             
         except Exception as e:
@@ -1022,14 +1070,17 @@ def main():
     #finding start and end date of dataset
     tx_data.get_analysis_time_frame()
 
-    tx_data.analyze_data()
+    tx_data.subscriptions_data, tx_data.recurring_merchants_data = tx_data.analyze_data()
     tx_data.print_data(0, "subscriptions", True)
     tx_data.print_data(0, "reccuring", False)
 
-    # upload the data to the worksheet
-    if not upload_data_to_worksheet(SHEET, "SORTED TX DATA", tx_data.sorted_clean_data, tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
+    # upload the analysis results to a new worksheet
+    if not upload_data_to_worksheet(SHEET, "SORTED TX DATA", "SORTED AND CLEANED TRANSACTION DATA", tx_data.sorted_clean_data, "", [], tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
         print("an error occurred while uploading the data to the Google Sheet.")
-    
+
+    # upload the analysis result data to a new worksheet
+    if not upload_data_to_worksheet(SHEET, "ANALYSIS RESULTS", "SUBSCRIPTIONS", tx_data.subscriptions_data, "MERCHANT WITH MULTIPLE PURCHASES", tx_data.recurring_merchants_data,  tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
+        print("an error occurred while uploading the data to the Google Sheet.")
 
 
 
