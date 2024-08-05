@@ -408,22 +408,45 @@ def append_and_format_row(ws_output, row_data, format_type):
     """
     Append a new row to the worksheet and format it
     """
-    # Handle empty row data
+    # Seems there is a bug in gspread when trying to add an empty row. Let's try this:
     if not row_data or row_data == [""]:
-        row_data = [" ", " ", " "] 
+        row_data = ["-"] 
     
     ws_output.append_row(row_data)
     # Get the row count after appending the new row
     new_row_index = len(ws_output.get_all_values())
     format_row_in_worksheet(ws_output, new_row_index, format_type)
 
-def append_dataset_headings(ws_output, dataset):
+def append_dataset1_headings(ws_output, dataset):
     """
     Append the headings of the dataset to the worksheet
     """
-    keys_list = list(dataset[0].keys())
+    keys_list = [
+        TX_MERCHANT_KEY,
+        "subs_day",
+        TX_AMOUNT_KEY,
+        "subs_start_date",
+        "subs_end_date",
+        "subs_frequency",
+        "subs_merchant_sum",
+        "num_subs_tx",
+        "active"
+        ]
     append_and_format_row(ws_output, keys_list, "bold")
-    append_and_format_row(ws_output, [""], "normal")
+
+def append_dataset2_headings(ws_output, dataset):
+    """
+    Append the headings of the dataset to the worksheet
+    """
+    keys_list = [
+        TX_MERCHANT_KEY,
+        "last_tx_date",
+        "first_tx_date",
+        "last_tx_amount",
+        "merchant_sum",
+        "num_tx"
+        ]
+    append_and_format_row(ws_output, keys_list, "bold")
 
 def append_dataset1_rows(ws_output, dataset):
     """
@@ -441,6 +464,9 @@ def append_dataset1_rows(ws_output, dataset):
             row["num_subs_tx"],
             str(row["active"])
         ], value_input_option='USER_ENTERED')
+    
+        new_row_index = len(ws_output.get_all_values())
+        format_row_in_worksheet(ws_output, new_row_index, "normal")
 
 def append_dataset2_rows(ws_output, dataset):
     """
@@ -455,6 +481,9 @@ def append_dataset2_rows(ws_output, dataset):
             row["merchant_sum"],
             row["num_tx"]
         ], value_input_option='USER_ENTERED')
+    
+        new_row_index = len(ws_output.get_all_values())
+        format_row_in_worksheet(ws_output, new_row_index, "normal")
 
 def upload_results_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, dataset1, heading_dataset2, dataset2, start_date, end_date):
     """
@@ -474,28 +503,27 @@ def upload_results_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, d
         # filling in the data
         if dataset1:
             # Insert heading for dataset1
-            append_and_format_row(ws_output, [""], "normal")
             append_and_format_row(ws_output, [heading_dataset1], "bold")
             append_and_format_row(ws_output, ["Start-Date", convert_datetime_object_to_str(start_date)], "normal")
             append_and_format_row(ws_output, ["End-Date", convert_datetime_object_to_str(end_date)], "normal")
-            append_and_format_row(ws_output, [""], "normal")
+            append_and_format_row(ws_output, [], "normal")
             
             # Append dataset headings
-            append_dataset_headings(ws_output, dataset1)
+            append_dataset1_headings(ws_output, dataset1)
             
             # Append dataset rows
             append_dataset1_rows(ws_output, dataset1)
         
         if dataset2:
-            # Insert heading for dataset1
-            append_and_format_row(ws_output, [""], "normal")
+            # Insert heading for dataset2
+            append_and_format_row(ws_output, [], "normal")
             append_and_format_row(ws_output, [heading_dataset2], "bold")
             append_and_format_row(ws_output, ["Start-Date", convert_datetime_object_to_str(start_date)], "normal")
             append_and_format_row(ws_output, ["End-Date", convert_datetime_object_to_str(end_date)], "normal")
-            append_and_format_row(ws_output, [""], "normal")
+            append_and_format_row(ws_output, [], "normal")
             
             # Append dataset headings
-            append_dataset_headings(ws_output, dataset2)
+            append_dataset2_headings(ws_output, dataset2)
             
             # Append dataset rows
             append_dataset1_rows(ws_output, dataset1)
