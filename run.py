@@ -384,7 +384,7 @@ def convert_datetime_object_to_str(tx_date):
     """
     Convert tx_date into a string using the local setting.
     """
-    local_date = tx_date.strftime('%d/%m/%Y')
+    local_date = tx_date.strftime('%d.%m.%Y')
     
     return local_date
 
@@ -399,9 +399,13 @@ def format_row_in_worksheet(worksheet, row, type):
     if type == "bold":
         # Apply bold formatting to the row
         format_cell_range(worksheet, cell_range, CellFormat(textFormat=TextFormat(bold=True)))
+
+    if type == "normal":
+        # Apply bold formatting to the row
+        format_cell_range(worksheet, cell_range, CellFormat(textFormat=TextFormat(bold=False)))
     
 
-def upload_data_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, dataset1, heading_dataset2, dataset2, start_date, end_date):
+def upload_results_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, dataset1, heading_dataset2, dataset2, start_date, end_date):
     """
     create a new worksheet with worksheet_name in spreadsheet and
     upload the data to the selected worksheet
@@ -419,42 +423,70 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, data
         # filling in the data
         if dataset1:
             # let's insert a heading for dataset1 
-            ws_output.append_row(heading_dataset1, insert_data_option ='OVERWRITE')
+            ws_output.append_row([heading_dataset1], insert_data_option ='OVERWRITE')
             # format the row we just added
             format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
-            ws_output.append_row(["Start-Date", start_date], insert_data_option ='OVERWRITE')
-            ws_output.append_row(["Start-Date", end_date], insert_data_option ='OVERWRITE')
-            ws_output.append_row("", insert_data_option ='OVERWRITE')
+            ws_output.append_row(["Start-Date", convert_datetime_object_to_str(start_date)], insert_data_option ='OVERWRITE')
+            # format back to normal
+            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "normal")
+            ws_output.append_row(["End-Date", convert_datetime_object_to_str(end_date)], insert_data_option ='OVERWRITE')
+            ws_output.append_row([""], insert_data_option ='OVERWRITE')
             
             keys_list_dataset1 = list(dataset1[0].keys())
             # now first the headings
             ws_output.append_row(keys_list_dataset1, insert_data_option ='OVERWRITE')
             # format the row we just added
             format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
-            # then the data
-            ws_output.append_rows(dataset1, value_input_option='USER_ENTERED', insert_data_option ='OVERWRITE')
+            
+            ws_output.append_row([""], insert_data_option ='OVERWRITE')
+            # format back to normal
+            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "normal")
+            
+            for row in dataset1:
+                ws_output.append_row([
+                                    row[TX_MERCHANT_KEY],
+                                    row["subs_day"],
+                                    row[TX_AMOUNT_KEY],
+                                    convert_datetime_object_to_str(row["subs_start_date"]),
+                                    convert_datetime_object_to_str(row["subs_end_date"]),
+                                    row["subs_frequency"],
+                                    row["subs_merchant_sum"],
+                                    row["num_subs_tx"],
+                                    str(row["active"])
+                                    ], value_input_option='USER_ENTERED', insert_data_option ='OVERWRITE')
         
         if dataset2:
             # let's insert an empty row to separate from dataset1
-            ws_output.append_row("", insert_data_option ='OVERWRITE')
+            ws_output.append_row([""], insert_data_option ='OVERWRITE')
 
             # let's insert a heading for dataset2
-            ws_output.append_row(heading_dataset2, insert_data_option ='OVERWRITE')
+            ws_output.append_row([heading_dataset2], insert_data_option ='OVERWRITE')
             # format the row we just added
             format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
-            ws_output.append_row(["Start-Date", start_date], insert_data_option ='OVERWRITE')
-            ws_output.append_row(["Start-Date", end_date], insert_data_option ='OVERWRITE')
-            ws_output.append_row("", insert_data_option ='OVERWRITE')
+            ws_output.append_row(["Start-Date", convert_datetime_object_to_str(start_date)], insert_data_option ='OVERWRITE')
+             # format back to normal
+            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "normal")
+            ws_output.append_row(["Start-Date", convert_datetime_object_to_str(end_date)], insert_data_option ='OVERWRITE')
+            ws_output.append_row([""], insert_data_option ='OVERWRITE')
             
-            keys_list_dataset2 = list(dataset1[0].keys())
+            keys_list_dataset2 = list(dataset2[0].keys())
             # now first the headings
             ws_output.append_row(keys_list_dataset2, insert_data_option ='OVERWRITE')
             # format the row we just added
             format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "bold")
-            # then the data
-            ws_output.append_rows(dataset2, value_input_option='USER_ENTERED', insert_data_option ='OVERWRITE')
-
-        
+            ws_output.append_row([""], insert_data_option ='OVERWRITE')
+            # format back to normal
+            format_row_in_worksheet(ws_output, len(ws_output.get_all_values()), "normal")
+            
+            for row in dataset2:
+                ws_output.append_row([
+                                    row[TX_MERCHANT_KEY],
+                                    convert_datetime_object_to_str(row["last_tx_date"]),
+                                    convert_datetime_object_to_str(row["first_tx_date"]),
+                                    row["last_tx_amount"],
+                                    row["merchant_sum"],
+                                    row["num_tx"]
+                                    ], value_input_option='USER_ENTERED', insert_data_option ='OVERWRITE')
         
         print(f"\nThe data has been successfully uploaded to Spreadsheet: \n{spreadsheet.title} | worksheet: {worksheet_name}.")
         print(f"\nStart date of the dataset: {convert_datetime_object_to_str(start_date)} | End date: {convert_datetime_object_to_str(end_date)}\n")
@@ -465,7 +497,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, data
             print(f"\nA worksheet with the name '{worksheet_name}' already exists in the spreadsheet: '{spreadsheet.title}'.")
             new_worksheet_name = input("Please enter a different name for the worksheet:\n")
             # let's call this function recursively to get things done with a new name for the worksheet
-            if upload_data_to_worksheet(spreadsheet, new_worksheet_name, heading_dataset1, dataset1, heading_dataset2, dataset2, start_date, end_date):
+            if upload_results_to_worksheet(spreadsheet, new_worksheet_name, heading_dataset1, dataset1, heading_dataset2, dataset2, start_date, end_date):
                 return True
             else:
                 return False
@@ -959,13 +991,14 @@ class TxData:
                             new_subs_list_entry = {
                                                 TX_MERCHANT_KEY: curr_tx_merchant, 
                                                 "subs_day": curr_tx_date.day, # subscriptions should happen around the same day so let's save curent tx date and update further as we work backwords in time
-                                                TX_AMOUNT_KEY: curr_tx_amount, # we have a new subscription with an exiting subscription merchant so let's use the new amount as baseline 
+                                                TX_AMOUNT_KEY: merchant_last_amount_paid, # as the entries in the list get older this is the last amount paid and will not get updated
                                                 "subs_start_date": curr_tx_date, # will be updated further as we work backwords in time
-                                                "subs_end_date": curr_tx_date, # as the entries in the list get older this is the last date the subscription was paid and will not get updated
+                                                "subs_end_date": merchant_last_date, # as the entries in the list get older this is the last date the subscription was paid and will not get updated
+                                                "subs_frequency": subs_frequency,
                                                 "subs_merchant_sum": merchant_sum,
                                                 "num_subs_tx": num_merchant_tx,
                                                 "active": subs_active 
-                                                }
+                                                 }
                             # let's add the merchant to the list
                             self.subscriptions_data.append(new_subs_list_entry)
                         
@@ -1089,21 +1122,16 @@ def main():
     tx_data.get_analysis_time_frame()
 
     tx_data.subscriptions_data, tx_data.recurring_merchants_data = tx_data.analyze_data()
-    tx_data.print_data(0, "subscriptions", True)
-    tx_data.print_data(0, "reccuring", False)
+    #tx_data.print_data(0, "subscriptions", True)
+    #tx_data.print_data(0, "reccuring", False)
 
     # upload the analysis results to a new worksheet
-    if not upload_data_to_worksheet(SHEET, "SORTED TX DATA", "SORTED AND CLEANED TRANSACTION DATA", tx_data.sorted_clean_data, "", [], tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
-        print("an error occurred while uploading the data to the Google Sheet.")
+    #if not upload_data_to_worksheet(SHEET, "SORTED TX DATA", "SORTED AND CLEANED TRANSACTION DATA", tx_data.sorted_clean_data, "", [], tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
+    #    print("an error occurred while uploading the data to the Google Sheet.")
 
     # upload the analysis result data to a new worksheet
-    if not upload_data_to_worksheet(SHEET, "ANALYSIS RESULTS", "SUBSCRIPTIONS", tx_data.subscriptions_data, "MERCHANT WITH MULTIPLE PURCHASES", tx_data.recurring_merchants_data,  tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
+    if not upload_results_to_worksheet(SHEET, "ANALYSIS RESULTS", "SUBSCRIPTIONS", tx_data.subscriptions_data, "MERCHANT WITH MULTIPLE PURCHASES", tx_data.recurring_merchants_data,  tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
         print("an error occurred while uploading the data to the Google Sheet.")
-
-
-
-
-
 
 
 main()
