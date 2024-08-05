@@ -397,7 +397,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data, start_date, end_
         # creating the worksheet
         ws_output = spreadsheet.add_worksheet(title=worksheet_name, rows=1, cols=10)
         
-        print("Uploading the data. NOTE: this may take!...")
+        print("Uploading the data. NOTE: this may take a while - please be patient!...")
         # filling in the data
 
         # first the headings
@@ -408,7 +408,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, data, start_date, end_
             ws_output.append_row([convert_datetime_object_to_str(row[TX_DATE_KEY]), row[TX_MERCHANT_KEY], row[TX_AMOUNT_KEY]])
         
         print(f"\nThe data has been successfully uploaded to Spreadsheet: \n{spreadsheet.title} | worksheet: {worksheet_name}.")
-        print(f"\nStart date of the dataset: {start_date} | End date: {end_date}\n")
+        print(f"\nStart date of the dataset: {convert_datetime_object_to_str(start_date)} | End date: {convert_datetime_object_to_str(end_date)}\n")
         return True
     
     except APIError as e:
@@ -695,9 +695,8 @@ class TxData:
         Finds the date of the first and last transaction in the data set 
         Sets class attribute ANALYSIS_START_DATE and ANALYSIS_END_DATE
         """
-
-        ANALYSIS_END_DATE = self.sorted_clean_data[len(self.clean_tx_data)-1][TX_DATE_KEY]
-        ANALYSIS_START_DATE = self.sorted_clean_data[0][TX_DATE_KEY]
+        self.ANALYSIS_END_DATE = self.sorted_clean_data[len(self.clean_tx_data)-1][TX_DATE_KEY]
+        self.ANALYSIS_START_DATE = self.sorted_clean_data[0][TX_DATE_KEY]
 
     def analyze_data(self):
        """
