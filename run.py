@@ -465,7 +465,7 @@ def upload_data_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, data
             print(f"\nA worksheet with the name '{worksheet_name}' already exists in the spreadsheet: '{spreadsheet.title}'.")
             new_worksheet_name = input("Please enter a different name for the worksheet:\n")
             # let's call this function recursively to get things done with a new name for the worksheet
-            if upload_data_to_worksheet(spreadsheet, new_worksheet_name, data, start_date, end_date):
+            if upload_data_to_worksheet(spreadsheet, new_worksheet_name, heading_dataset1, dataset1, heading_dataset2, dataset2, start_date, end_date):
                 return True
             else:
                 return False
