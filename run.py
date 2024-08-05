@@ -764,7 +764,7 @@ class TxData:
                           {self.subscriptions_data[i]["subs_merchant_sum"]} | \
                           {self.subscriptions_data[i]["num_subs_tx"]} | \
                           {str(self.subscriptions_data[i]["active"])}") 
-                
+
                 elif what_data == "reccuring":
                     print(f"{self.recurring_merchants_data[i][TX_MERCHANT_KEY]} | \
                           {self.recurring_merchants_data[i]["last_tx_date"]} | \
@@ -772,9 +772,9 @@ class TxData:
                           {self.recurring_merchants_data[i]["last_tx_amount"]} | \
                           {self.recurring_merchants_data[i]["merchant_sum"]} | \
                           {self.recurring_merchants_data[i]["num_tx"]}") 
-                    
+                   
         except Exception as e:
-           print(f"\nUnexpected  error occurred in print_data(): \n")
+           print(f"\nUnexpected  error occurred in print_data({what_data}): \n")
            # from https://docs.python.org/3/tutorial/errors.html:
            print(type(e))    # the exception type
            return False 
@@ -1012,7 +1012,7 @@ class TxData:
                 prev_tx_amount = curr_tx_amount
                 prev_tx_date = curr_tx_date
             
-            return self.recurring_merchants_data, self.subscriptions_data
+            return self.subscriptions_data, self.recurring_merchants_data
 
             
         except Exception as e:
