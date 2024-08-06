@@ -3,7 +3,6 @@ from gspread_formatting import format_cell_range, CellFormat, TextFormat
 from gspread.exceptions import SpreadsheetNotFound, GSpreadException, APIError
 from google.oauth2.service_account import Credentials
 from datetime import datetime
-#from dateutil import parser
 import re
 import os
 import calendar
