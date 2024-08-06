@@ -394,7 +394,7 @@ def format_row_in_worksheet(worksheet, row, type):
     outline provided by ChatGPT
     """
     # Define the range of the last row (e.g., A10:D10 for 4 columns)
-    cell_range = f"A{row}:F{row}"
+    cell_range = f"A{row}:K{row}"
 
     if type == "bold":
         # Apply bold formatting to the row
@@ -417,7 +417,7 @@ def append_and_format_row(ws_output, row_data, format_type):
     new_row_index = len(ws_output.get_all_values())
     format_row_in_worksheet(ws_output, new_row_index, format_type)
 
-def append_dataset1_headings(ws_output, dataset):
+def append_dataset1_headings(ws_output):
     """
     Append the headings of the dataset to the worksheet
     """
@@ -434,7 +434,7 @@ def append_dataset1_headings(ws_output, dataset):
         ]
     append_and_format_row(ws_output, keys_list, "bold")
 
-def append_dataset2_headings(ws_output, dataset):
+def append_dataset2_headings(ws_output):
     """
     Append the headings of the dataset to the worksheet
     """
@@ -445,6 +445,18 @@ def append_dataset2_headings(ws_output, dataset):
         "last_tx_amount",
         "merchant_sum",
         "num_tx"
+        ]
+    append_and_format_row(ws_output, keys_list, "bold")
+
+
+def append_sorted_headings(ws_output):
+    """
+    Append the headings of the dataset to the worksheet
+    """
+    keys_list = [
+        TX_DATE_KEY,
+        TX_MERCHANT_KEY,
+        TX_AMOUNT_KEY,
         ]
     append_and_format_row(ws_output, keys_list, "bold")
 
@@ -485,6 +497,20 @@ def append_dataset2_rows(ws_output, dataset):
         new_row_index = len(ws_output.get_all_values())
         format_row_in_worksheet(ws_output, new_row_index, "normal")
 
+def append_sorted_rows(ws_output, dataset):
+    """
+    Append the rows of sorted_clean data to the worksheet
+    """
+    for row in dataset:
+        ws_output.append_row([
+            convert_datetime_object_to_str(row[TX_DATE_KEY]),
+            row[TX_MERCHANT_KEY],
+            row[TX_AMOUNT_KEY],
+        ], value_input_option='USER_ENTERED')
+    
+        new_row_index = len(ws_output.get_all_values())
+        format_row_in_worksheet(ws_output, new_row_index, "normal")
+
 def upload_results_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, dataset1, heading_dataset2, dataset2, start_date, end_date):
     """
     create a new worksheet with worksheet_name in spreadsheet and
@@ -509,7 +535,7 @@ def upload_results_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, d
             append_and_format_row(ws_output, [], "normal")
             
             # Append dataset headings
-            append_dataset1_headings(ws_output, dataset1)
+            append_dataset1_headings(ws_output)
             
             # Append dataset rows
             append_dataset1_rows(ws_output, dataset1)
@@ -523,10 +549,68 @@ def upload_results_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, d
             append_and_format_row(ws_output, [], "normal")
             
             # Append dataset headings
-            append_dataset2_headings(ws_output, dataset2)
+            append_dataset2_headings(ws_output)
             
             # Append dataset rows
             append_dataset2_rows(ws_output, dataset2)
+        
+        print(f"\nThe data has been successfully uploaded to Spreadsheet: \n{spreadsheet.title} | worksheet: {worksheet_name}.")
+        print(f"\nStart date of the dataset: {convert_datetime_object_to_str(start_date)} | End date: {convert_datetime_object_to_str(end_date)}\n")
+        return True
+    
+    except APIError as e:
+        if e.response.status_code == 400:
+            print(f"\nA worksheet with the name '{worksheet_name}' already exists in the spreadsheet: '{spreadsheet.title}'.")
+            new_worksheet_name = input("Please enter a different name for the worksheet:\n")
+            # let's call this function recursively to get things done with a new name for the worksheet
+            if upload_results_to_worksheet(spreadsheet, new_worksheet_name, heading_dataset1, dataset1, heading_dataset2, dataset2, start_date, end_date):
+                return True
+            else:
+                return False
+
+        else:
+            print(f"\nAn API error occurred: {e}")
+            print(f"Status Code: {e.response.status_code}")
+            print(f"Error Message: {e.response.text}")
+            return False
+    
+    except GSpreadException as e:
+        print(f"\nAn error occurred trying to access the spreadsheet: {e}")
+        return
+    
+    except Exception as e:
+        print(f"\nUnexpected  error occurred: \n")
+        # from https://docs.python.org/3/tutorial/errors.html:
+        print(type(e))    # the exception type
+        return False
+
+def upload_sorted_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, dataset1, start_date, end_date):
+    """
+    create a new worksheet with worksheet_name in spreadsheet and
+    upload the data to the selected worksheet
+    """
+    print("\nStarting the data upload to Google Sheets...")
+
+    try:
+        print("Creating new worksheet...")
+        # creating the worksheet
+        ws_output = spreadsheet.add_worksheet(title=worksheet_name, rows=1, cols=10)
+        
+        print("Uploading the data. NOTE: this may take a while - please be patient!...")
+        
+        # filling in the data
+        if dataset1:
+            # Insert heading for dataset1
+            append_and_format_row(ws_output, [heading_dataset1], "bold")
+            append_and_format_row(ws_output, ["Start-Date", convert_datetime_object_to_str(start_date)], "normal")
+            append_and_format_row(ws_output, ["End-Date", convert_datetime_object_to_str(end_date)], "normal")
+            append_and_format_row(ws_output, [], "normal")
+            
+            # Append dataset headings
+            append_sorted_headings(ws_output)
+            
+            # Append dataset rows
+            append_sorted_rows(ws_output, dataset1)
         
         print(f"\nThe data has been successfully uploaded to Spreadsheet: \n{spreadsheet.title} | worksheet: {worksheet_name}.")
         print(f"\nStart date of the dataset: {convert_datetime_object_to_str(start_date)} | End date: {convert_datetime_object_to_str(end_date)}\n")
@@ -1162,16 +1246,15 @@ def main():
     tx_data.get_analysis_time_frame()
 
     tx_data.subscriptions_data, tx_data.recurring_merchants_data = tx_data.analyze_data()
-    #tx_data.print_data(0, "subscriptions", True)
-    #tx_data.print_data(0, "reccuring", False)
-
-    # upload the analysis results to a new worksheet
-    #if not upload_data_to_worksheet(SHEET, "SORTED TX DATA", "SORTED AND CLEANED TRANSACTION DATA", tx_data.sorted_clean_data, "", [], tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
-    #    print("an error occurred while uploading the data to the Google Sheet.")
+    tx_data.print_data(0, "subscriptions", True)
+    tx_data.print_data(0, "reccuring", False)
 
     # upload the analysis result data to a new worksheet
     if not upload_results_to_worksheet(SHEET, "ANALYSIS RESULTS", "SUBSCRIPTIONS", tx_data.subscriptions_data, "MERCHANT WITH MULTIPLE PURCHASES", tx_data.recurring_merchants_data,  tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
-        print("an error occurred while uploading the data to the Google Sheet.")
-
+        print("\nan error occurred while uploading the data to the Google Sheet.")
+    
+    # upload the sorted and cleaned data to a new worksheet
+    #if not upload_sorted_to_worksheet(SHEET, "SORTED TX DATA", "SORTED AND CLEANED TRANSACTION DATA", tx_data.sorted_clean_data, tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
+    #    print("\nan error occurred while uploading the data to the Google Sheet.")
 
 main()
