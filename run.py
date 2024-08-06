@@ -6,6 +6,7 @@ from datetime import datetime
 import re
 import os
 import calendar
+from termcolor import colored, cprint
 
 
 # love sandwiches example used as baseline
@@ -46,11 +47,12 @@ def intro_go_on():
     print("If you already have one please select option 2. below.\n")
     print("Let's get started!\n")
 
-    print("How do you want to continue?\n \
+    cprint("\
+        \nHow do you want to continue?\n \
         \nPress \
         \n1: to create a new Spreadsheet \
         \n2: for re-using one previsously created (through RET or by you) \
-        \nAny other key to EXIT:")
+        \nAny other key to EXIT:", 'red')
     
     go_on = input("\n")
 
