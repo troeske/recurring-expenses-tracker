@@ -1042,10 +1042,14 @@ class TxData:
 
             for i in range(number_of_rows):
                 if what_data == "raw":
-                    print(f"{self.selected_raw_tx_data[i][ROW_KEY]:<5} | "
-                          f"{self.selected_raw_tx_data[i][TX_DATE_KEY]:<11} | "
-                          f"{self.selected_raw_tx_data[i][TX_MERCHANT_KEY]:<30} | "
-                          f"{self.selected_raw_tx_data[i][TX_AMOUNT_KEY]:<10}")
+                    r = self.selected_raw_tx_data[i][ROW_KEY]
+                    d = self.selected_raw_tx_data[i][TX_DATE_KEY]
+                    m = self.selected_raw_tx_data[i][TX_MERCHANT_KEY]
+                    a = self.selected_raw_tx_data[i][TX_AMOUNT_KEY]
+                    print(f"{r:<5} | "
+                          f"{d:<11} | "
+                          f"{m:<30} | "
+                          f"{a:<10}")
 
                 elif what_data == "clean":
                     print(f"{self.clean_tx_data[i][TX_DATE_KEY]} \
@@ -1268,7 +1272,7 @@ class TxData:
 
                     # let's check if this merchant already exists in the
                     # subscription_data list
-                    merchant_in_subs, subs_index = self.merchant_in_list(
+                    merchant_in_subs, x = self.merchant_in_list(
                         self.subscriptions_data, curr_tx_merchant)
 
                     is_tx_subscription, subs_frequency = self.is_subscription(
@@ -1320,12 +1324,17 @@ class TxData:
                             # values. As the tx_dates get older let's
                             # update the start_date to what we know
                             # in this loop
-                            self.subscriptions_data[subs_index]["subs_start_date"] = curr_tx_date
+                            self.subscriptions_data[x]["subs_start_date"] = \
+                                curr_tx_date
                             # update further as we work backwords in time
-                            self.subscriptions_data[subs_index]["subs_day"] = curr_tx_date.day
-                            self.subscriptions_data[subs_index]["subs_merchant_sum"] = merchant_sum
-                            self.subscriptions_data[subs_index]["subs_frequency"] = subs_frequency
-                            self.subscriptions_data[subs_index]["num_subs_tx"] = num_merchant_tx
+                            self.subscriptions_data[x]["subs_day"] = \
+                                curr_tx_date.day
+                            self.subscriptions_data[x]["subs_merchant_sum"] = \
+                                merchant_sum
+                            self.subscriptions_data[x]["subs_frequency"] = \
+                                subs_frequency
+                            self.subscriptions_data[x]["num_subs_tx"] = \
+                                num_merchant_tx
 
                     else:
                         if merchant_in_subs:
@@ -1382,7 +1391,7 @@ class TxData:
 
                             # let's check if this merchant already
                             # exists in the recurring_merchant list
-                            merchant_in_rec, rec_index = self.merchant_in_list(
+                            merchant_in_rec, ri = self.merchant_in_list(
                                 self.recurring_merchants_data,
                                 curr_tx_merchant)
                             if not merchant_in_rec:
@@ -1410,9 +1419,14 @@ class TxData:
                                 # list previously, so let's update the
                                 # appropriate entry in the list with the
                                 # new values as we go back in time.
-                                self.recurring_merchants_data[rec_index]["first_tx_date"] = curr_tx_date
-                                self.recurring_merchants_data[rec_index]["merchant_sum"] = merchant_sum
-                                self.recurring_merchants_data[rec_index]["num_tx"] = num_merchant_tx
+                                f_date = "first_tx_date"
+                                self.recurring_merchants_data[ri][f_date] = \
+                                    curr_tx_date
+                                m_sum = "merchant_sum"
+                                self.recurring_merchants_data[ri][m_sum] = \
+                                    merchant_sum
+                                self.recurring_merchants_data[ri]["num_tx"] = \
+                                    num_merchant_tx
 
                 else:
                     # new merchant
@@ -1516,7 +1530,7 @@ def main():
     tx_data.get_analysis_time_frame(tx_data.clean_tx_data)
 
     (tx_data.subscriptions_data,
-    tx_data.recurring_merchants_data) = tx_data.analyze_data()
+        tx_data.recurring_merchants_data) = tx_data.analyze_data()
 
     # upload the analysis result data to a new worksheet
     if not upload_results_to_worksheet(SHEET, "ANALYSIS RESULTS",
