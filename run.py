@@ -654,8 +654,7 @@ def upload_results_to_worksheet(spreadsheet, worksheet_name,
 
         print(f"\nThe data has been successfully uploaded to Spreadsheet: \
                 \n'{spreadsheet.title}' | worksheet: '{worksheet_name}'")
-        print(f"\nStart date: \
-                \n{convert_datetime_object_to_str(start_date)} | \
+        print(f"\nStart date: {convert_datetime_object_to_str(start_date)}\
                 \nEnd date: {convert_datetime_object_to_str(end_date)}\n")
         return True
 
