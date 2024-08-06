@@ -129,15 +129,15 @@ def get_existing_spreadsheet():
         return spreadsheet
     
     except KeyboardInterrupt:
-        print("\nthis is a test: KeyboardInterrupt in get_existing_spreadsheet()\n")
-        get_existing_spreadsheet()
+        cprint("IMPORTANT! Please use right mouse click and copy/past from there!\n", 'light_cyan')
+        existing_ssheet = get_existing_spreadsheet()
+        return existing_ssheet
 
     except Exception as e:
         print(f"An error occurred: {e}")
         # from https://docs.python.org/3/tutorial/errors.html:
         print(type(e))    # the exception type
         print("Please try again.")
-        get_existing_spreadsheet()
     
 
 def open_existing_spreadsheet(existing_ssheet):
@@ -163,9 +163,6 @@ def open_existing_spreadsheet(existing_ssheet):
     except GSpreadException as e:
         print(f"\nAn error occurred trying to access the spreadsheet: {e}")
         return
-    
-    except KeyboardInterrupt:
-        print("\nthis is a test: KeyboardInterrupt in open_existing_spreadsheet()\n")
 
     except PermissionError:
         print(f"\nRET does not have permission to access this spreadsheet. \
