@@ -130,6 +130,7 @@ def get_existing_spreadsheet():
     
     except KeyboardInterrupt:
         print("\nthis is a test: KeyboardInterrupt in get_existing_spreadsheet()\n")
+        get_existing_spreadsheet()
 
     except Exception as e:
         print(f"An error occurred: {e}")
