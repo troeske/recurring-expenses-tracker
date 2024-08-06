@@ -999,7 +999,7 @@ class TxData:
         Paramaters:
         number_of_rows: number_of_rows to be printed. 0: print all rows
         what_data: data to be printed -> 'raw'. 'clean', 'sorted',
-        'subscriptions', 'reccuring'
+        'subscriptions'
         clean: True -> clean the console windows before output
         """
         if clean:
@@ -1542,19 +1542,6 @@ def main():
                                        tx_data.ANALYSIS_END_DATE):
         print("\nan error occurred while uploading the data to the \
               \nGoogle Sheet.")
-
-    # upload the sorted and cleaned data to a new worksheet
-    # seems I am exceeding the max ressource utilization with gspread
-    # in the free account so I am commenting the following out but leave
-    # it in the code as it will be usefull in future
-
-    # if not upload_sorted_to_worksheet(SHEET, "SORTED TX DATA",
-    # "SORTED AND CLEANED TRANSACTION DATA",
-    # tx_data.sorted_clean_data,
-    # tx_data.ANALYSIS_START_DATE,
-    # tx_data.ANALYSIS_END_DATE):
-    # print("\nan error occurred while uploading the \
-    # data to the Google Sheet.")
 
 
 main()
