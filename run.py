@@ -128,6 +128,9 @@ def get_existing_spreadsheet():
         # all good now so let's return the worksheet
         return spreadsheet
     
+    except KeyboardInterrupt:
+        print("\nthis is a test: KeyboardInterrupt in get_existing_spreadsheet()\n")
+
     except Exception as e:
         print(f"An error occurred: {e}")
         # from https://docs.python.org/3/tutorial/errors.html:
@@ -167,12 +170,13 @@ def open_existing_spreadsheet(existing_ssheet):
         print(f"\nRET does not have permission to access this spreadsheet. \
                 \nYou can add RET as an editor to the spreadsheet.")
         print(f"\
-                \nClick Share on the upper right corner of the Google Sheet and add:\
-                \n\n{CREDS.service_account_email}\
+                \nClick Share on the upper right corner of the Google Sheet and add:")
+        cprint("\nKEEP IN MIND: always use right mouse click to copy/paste!", 'light_cyan')
+        print(f"\n\n{CREDS.service_account_email}\
                 \n\nPlease select 'Editor' and uncheck: 'Notify people'\
                 \nThen try again.")
         
-        cprint("\nKEEP IN MIND: always use right mouse click to copy/paste!", 'light_cyan')
+        
         return False
 
     except Exception as e:
