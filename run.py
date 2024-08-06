@@ -40,17 +40,17 @@ def intro_go_on():
 
     cprint("Welcome to the Recurring Expense Tracker: RET!\n", 'red')
     print("You can import your bank account and/or \
-          credit card transaction data into RET.")
+          \ncredit card transaction data into RET.")
     print("RET will sort through all the transaction \
-          data and provide you with")
+          \ndata and provide you with")
     print("a list of recurring expenses and subscriptions.\n")
     print("To provide a platform for you to manage your \
-          recurring expenses,")
+          \nrecurring expenses,")
     print("RET will use Google Sheets to let you import your \
-          CSV files and")
+          \nCSV files and")
     print("provide the output for you as well.\n")
     print("If you like, RET can create a new Google Spreadsheet and \
-          share it with you.")
+          \nshare it with you.")
     print("If you already have one please select option 2. below.\n")
     print("Let's get started!\n")
 
@@ -126,22 +126,22 @@ def get_existing_spreadsheet():
     Return: the Spreadsheet object that the user wants to open
     """
     try:
-        cprint("IMPORTANT! Please use right mouse click and copy/past \
-               from there!\n", 'light_cyan')
+        cprint("IMPORTANT! Please use right mouse click and \
+               \ncopy/past from there!\n", 'light_cyan')
         existing_s_sheet = input("Please paste the URL of the Spreadsheet \
-                                 you want to open:\n")
+                                 \nyou want to open:\n")
 
         # loop as long user entered empty string
         while existing_s_sheet == "":
             existing_s_sheet = input("Please paste the URL of the Spreadsheet \
-                                     you want to open:\n")
+                                     \nyou want to open:\n")
 
         # let's try to open the spreadsheet
         spreadsheet = open_existing_spreadsheet(existing_s_sheet)
         while not spreadsheet:
             # seems user input isn't correct, so let's ask again
             existing_s_sheet = input("Please paste the URL of the Spreadsheet \
-                                     you want to open:\n")
+                                     \nyou want to open:\n")
             spreadsheet = open_existing_spreadsheet(existing_s_sheet)
 
         # all good now so let's return the worksheet
@@ -149,7 +149,7 @@ def get_existing_spreadsheet():
 
     except KeyboardInterrupt:
         cprint("IMPORTANT! Please use right mouse click and copy/past \
-               from there!\n", 'light_cyan')
+               \nfrom there!\n", 'light_cyan')
         existing_ssheet = get_existing_spreadsheet()
         return existing_ssheet
 
@@ -188,13 +188,13 @@ def open_existing_spreadsheet(existing_ssheet):
         print(f"\nRET does not have permission to access this spreadsheet. \
                 \nYou can add RET as an editor to the spreadsheet.")
         print(f"\
-                \nClick Share on the upper right corner of the Google \
-              Sheet and add:")
+              \nClick Share on the upper right corner of the Google \
+              \nSheet and add:")
         print(f"\n\n{CREDS.service_account_email}")
-        cprint("KEEP IN MIND: always use right mouse click to copy/paste!",
+        cprint("\nKEEP IN MIND: always use right mouse click to copy/paste!",
                'light_cyan')
         print("\n\nPlease select 'Editor' and uncheck: 'Notify people'\
-                \nThen try again.")
+                \nThen try again.\n\n")
         return False
 
     except Exception as e:
@@ -239,12 +239,12 @@ def get_imported_csv_wsheet(spreadsheet):
     the CSV file to
     """
     print(f"Now, please imnport your CSV file to the Google Sheet: \
-          '{spreadsheet.title}', RET just created or opened.")
+          \n'{spreadsheet.title}', RET just created or opened.")
     print("You can do this by clicking on the 'File' menu in the \
-          Google Sheet and selecting 'Import'.")
+          \nGoogle Sheet and selecting 'Import'.")
 
     wait_for_user("Have you imported the CSV file to the \
-                  Google Sheet? (y/n): ")
+                  \nGoogle Sheet? (y/n): ")
 
     clean_console()
 
@@ -252,24 +252,24 @@ def get_imported_csv_wsheet(spreadsheet):
         print(f"You are working with the Google Sheet: '{spreadsheet.title}'")
 
         print("\nPlease enter the worksheet name where you \
-              imported the CSV file.")
+              \nimported the CSV file.")
         print("\nYou can do this by double-clicking on the \
-              Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet.")
+              \nSheet Name (e.g. 'Sheet1') in footer of the Spreadsheet.")
         cprint("KEEP IN MIND: always use right mouse click \
-               to copy/paste!\n", 'light_cyan')
+               \nto copy/paste!\n", 'light_cyan')
         ws_name = input("Sheet name:\n")
 
         # loop as long user entered empty string
         while ws_name == "":
             ws_name = input("Please enter the worksheet name \
-                            where you imported the CSV file:\n")
+                            \nwhere you imported the CSV file:\n")
 
         # let's try to select the worksheet
         worksheet = select_imported_csv_wsheet(spreadsheet, ws_name)
         while not worksheet:
             # seems user input isn't correct, so let's ask again
             ws_name = input("Please enter the worksheet name where \
-                            you imported the CSV file:\n")
+                            \nyou imported the CSV file:\n")
             worksheet = select_imported_csv_wsheet(spreadsheet, ws_name)
 
         # all good now so let's return the worksheet
@@ -369,8 +369,8 @@ def import_raw_data(raw_data_wsheet):
     selected_tx_data = []
 
     # let's start with the row where the transaction data starts
-    input_message = "\nPlease enter the row number \nwhere the \
-        transaction data starts (e.g. 1, 2, 3, etc.):\n"
+    input_message = "\nPlease enter the row number where the \
+        \ntransaction data starts (e.g. 1, 2, 3, etc.):\n"
     start_row = get_int(input_message)
     while not start_row:
         start_row = get_int(input_message)
@@ -378,7 +378,7 @@ def import_raw_data(raw_data_wsheet):
     # now the columns for tx_date, tx_merchant, and tx_amount
     # let's start with the transaction date column
     message = "\nPlease enter the column letter where the \n\
-        transaction date is located \n(e.g. A, B, C, etc.):\n"
+        \ntransaction date is located \n(e.g. A, B, C, etc.):\n"
     tx_date_col = column_letter_to_number(input(message))
     while not tx_date_col:
         tx_date_col = column_letter_to_number(input(message))
@@ -388,7 +388,7 @@ def import_raw_data(raw_data_wsheet):
 
     # now the merchant column
     message = "\nPlease enter the column letter where the \nmerchant/\
-        recipient is located (e.g. A, B, C, etc.):\n"
+        \nrecipient is located (e.g. A, B, C, etc.):\n"
     tx_merchant_col = column_letter_to_number(input(message))
     while not tx_merchant_col:
         tx_merchant_col = column_letter_to_number(input(message))
@@ -398,7 +398,7 @@ def import_raw_data(raw_data_wsheet):
 
     # now the amount column
     message = "\nPlease enter the column letter where the \ntransaction \
-        amount is located (e.g. A, B, C, etc.):\n"
+        \namount is located (e.g. A, B, C, etc.):\n"
     tx_amount_col = column_letter_to_number(input(message))
     while not tx_amount_col:
         tx_amount_col = column_letter_to_number(input(message))
@@ -614,7 +614,7 @@ def upload_results_to_worksheet(spreadsheet, worksheet_name,
             title=worksheet_name, rows=1, cols=10)
 
         print("Uploading the data. NOTE: this may \
-              take a while - please be patient!...")
+              \ntake a while - please be patient!...")
 
         # filling in the data
         if dataset1:
@@ -652,19 +652,19 @@ def upload_results_to_worksheet(spreadsheet, worksheet_name,
             # Append dataset rows
             append_dataset2_rows(ws_output, dataset2)
 
-        print(f"\nThe data has been successfully uploaded to Spreadsheet: \n\
-              '{spreadsheet.title}' | worksheet: '{worksheet_name}'")
-        print(f"\nStart date of the dataset: \
-              {convert_datetime_object_to_str(start_date)} | \
-                End date: {convert_datetime_object_to_str(end_date)}\n")
+        print(f"\nThe data has been successfully uploaded to Spreadsheet: \
+                \n'{spreadsheet.title}' | worksheet: '{worksheet_name}'")
+        print(f"\nStart date: \
+                \n{convert_datetime_object_to_str(start_date)} | \
+                \nEnd date: {convert_datetime_object_to_str(end_date)}\n")
         return True
 
     except APIError as e:
         if e.response.status_code == 400:
             print(f"\nA worksheet with the name '{worksheet_name}' \
-                  already exists in the spreadsheet: '{spreadsheet.title}'.")
+                  \nalready exists in the spreadsheet: '{spreadsheet.title}'.")
             new_worksheet_name = input("Please enter a different name \
-                                       for the worksheet:\n")
+                                       \nfor the worksheet:\n")
             # let's call this function recursively to get things done with
             # a new name for the worksheet
             if upload_results_to_worksheet(spreadsheet, new_worksheet_name,
@@ -733,15 +733,15 @@ def upload_sorted_to_worksheet(spreadsheet, worksheet_name,
               {spreadsheet.title} | worksheet: {worksheet_name}.")
         print(f"\nStart date of the dataset: \
               {convert_datetime_object_to_str(start_date)} \
-                | End date: {convert_datetime_object_to_str(end_date)}\n")
+                \n| End date: {convert_datetime_object_to_str(end_date)}\n")
         return True
 
     except APIError as e:
         if e.response.status_code == 400:
             print(f"\nA worksheet with the name '{worksheet_name}' \
-                  already exists in the spreadsheet: '{spreadsheet.title}'.")
+                  \nalready exists in the spreadsheet: '{spreadsheet.title}'.")
             new_worksheet_name = input("Please enter a different name for \
-                                       the worksheet:\n")
+                                       \nthe worksheet:\n")
             # let's call this function recursively to get things done
             # with a new name for the worksheet
             if upload_results_to_worksheet(spreadsheet, new_worksheet_name,
@@ -1016,7 +1016,10 @@ class TxData:
                 if number_of_rows == 0:
                     number_of_rows = len(self.selected_raw_tx_data)
 
-                print(f"Row| Date   | Merchant/Recepient       | Amount\n")
+                print(f"{'Row:':<5} | "
+                      f"{'Date:':<11} | "
+                      f"{'Merchant/Recepient:':<30} | "
+                      f"{'Amount:':<10}\n")
 
             elif what_data == "clean":
                 if number_of_rows == 0:
@@ -1037,23 +1040,16 @@ class TxData:
                 print(f"Merchant/Recepient     | DAY | Amount   | Start   \
                       | End      | Frequency | Sum      | Reps | Active | \n")
 
-            elif what_data == "reccuring":
-                if number_of_rows == 0:
-                    number_of_rows = len(self.recurring_merchants_data)
-
-                print(f"Merchant/Recepient     | Last Time |  First Time \
-                      | Last Amount | Sum      | Reps | \n")
-
             else:
                 print("print mode not supported\n")
                 return
 
             for i in range(number_of_rows):
                 if what_data == "raw":
-                    print(f"{self.selected_raw_tx_data[i][ROW_KEY]} \
-                          | {self.selected_raw_tx_data[i][TX_DATE_KEY]} \
-                          | {self.selected_raw_tx_data[i][TX_MERCHANT_KEY]} \
-                          | {self.selected_raw_tx_data[i][TX_AMOUNT_KEY]}")
+                    print(f"{self.selected_raw_tx_data[i][ROW_KEY]:<5} | "
+                          f"{self.selected_raw_tx_data[i][TX_DATE_KEY]:<11} | "
+                          f"{self.selected_raw_tx_data[i][TX_MERCHANT_KEY]:<30} | "
+                          f"{self.selected_raw_tx_data[i][TX_AMOUNT_KEY]:<10}")
 
                 elif what_data == "clean":
                     print(f"{self.clean_tx_data[i][TX_DATE_KEY]} \
@@ -1078,20 +1074,6 @@ class TxData:
                           {self.subscriptions_data[i]["num_subs_tx"]} | \
                           {str(self.subscriptions_data[i]["active"])}")
 
-                elif what_data == "reccuring":
-                    row = "{self.recurring_merchants_data[i][TX_MERCHANT_KEY]}"
-                    row += " | "
-                    row += "{self.recurring_merchants_data[i]['last_tx_date']}"
-                    row += " | "
-                    row += "{self.recurring_merchants_data[i]['first_tx_date']}"
-                    row += " | "
-                    row += "{self.recurring_merchants_data[i]['last_tx_amount']}"
-                    row += " | "
-                    row += "{self.recurring_merchants_data[i]['merchant_sum']}"
-                    row += " | "
-                    row += "{self.recurring_merchants_data[i]['num_tx']}"
-                    print(f"{row}")
-
         except Exception as e:
             print(f"\nUnexpected  error occurred in \
                   print_data({what_data}): \n")
@@ -1105,8 +1087,8 @@ class TxData:
         Sets class attribute ANALYSIS_START_DATE and ANALYSIS_END_DATE
         """
         sorted_dataset = self.sort_data(dataset, "date")
-        self.ANALYSIS_END_DATE = sorted_dataset[len(self.clean_tx_data)-1]
-        [TX_DATE_KEY]
+        dlen = len(self.clean_tx_data)-1
+        self.ANALYSIS_END_DATE = sorted_dataset[dlen][TX_DATE_KEY]
         self.ANALYSIS_START_DATE = sorted_dataset[0][TX_DATE_KEY]
 
     def merchant_in_list(self, data_list, tx_merchant):
@@ -1253,7 +1235,6 @@ class TxData:
         Returns: list of dictionaries subscription_data
         """
         try:
-
             new_subs_list_entry = []
 
             # setting the baseline for the first loop. These values will be
@@ -1343,17 +1324,12 @@ class TxData:
                             # values. As the tx_dates get older let's
                             # update the start_date to what we know
                             # in this loop
-                            self.subscriptions_data[subs_index]
-                            ["subs_start_date"] = curr_tx_date
+                            self.subscriptions_data[subs_index]["subs_start_date"] = curr_tx_date
                             # update further as we work backwords in time
-                            self.subscriptions_data[subs_index]
-                            ["subs_day"] = curr_tx_date.day
-                            self.subscriptions_data[subs_index]
-                            ["subs_merchant_sum"] = merchant_sum
-                            self.subscriptions_data[subs_index]
-                            ["subs_frequency"] = subs_frequency
-                            self.subscriptions_data[subs_index]
-                            ["num_subs_tx"] = num_merchant_tx
+                            self.subscriptions_data[subs_index]["subs_day"] = curr_tx_date.day
+                            self.subscriptions_data[subs_index]["subs_merchant_sum"] = merchant_sum
+                            self.subscriptions_data[subs_index]["subs_frequency"] = subs_frequency
+                            self.subscriptions_data[subs_index]["num_subs_tx"] = num_merchant_tx
 
                     else:
                         if merchant_in_subs:
@@ -1438,12 +1414,9 @@ class TxData:
                                 # list previously, so let's update the
                                 # appropriate entry in the list with the
                                 # new values as we go back in time.
-                                self.recurring_merchants_data[rec_index]
-                                ["first_tx_date"] = curr_tx_date
-                                self.recurring_merchants_data[rec_index]
-                                ["merchant_sum"] = merchant_sum
-                                self.recurring_merchants_data[rec_index]
-                                ["num_tx"] = num_merchant_tx
+                                self.recurring_merchants_data[rec_index]["first_tx_date"] = curr_tx_date
+                                self.recurring_merchants_data[rec_index]["merchant_sum"] = merchant_sum
+                                self.recurring_merchants_data[rec_index]["num_tx"] = num_merchant_tx
 
                 else:
                     # new merchant
@@ -1507,7 +1480,7 @@ def main():
     # ready to ask the user to import the CSV file
     RAW_DATA_WSHEET = get_imported_csv_wsheet(SHEET)
     print(f"\nRET succesfully connected to your Google Worksheet: \
-          {RAW_DATA_WSHEET.title}.\n")
+          \n{RAW_DATA_WSHEET.title}.\n")
 
     # import raw transaction data from the worksheet
     selected_raw_tx_data = import_raw_data(RAW_DATA_WSHEET)
@@ -1521,7 +1494,7 @@ def main():
     tx_data.print_data(10, "raw", True)
     if input("\nDo you want to continue with the data? (y/n):\n") != "y":
         print(f"\nOK, please check '{RAW_DATA_WSHEET.title}' and let's \
-              try again")
+              \ntry again")
         # we need to delete the instance of the TxData class first
         del tx_data
         selected_raw_tx_data = import_raw_data(RAW_DATA_WSHEET)
@@ -1543,13 +1516,8 @@ def main():
     # finding start and end date of dataset
     tx_data.get_analysis_time_frame(tx_data.clean_tx_data)
 
-    tx_data.subscriptions_data,
-    tx_data.recurring_merchants_data = tx_data.analyze_data()
-    # seems I am exceeding the max ressource utilization with gspread
-    # in the free account so I comment the following out but leave
-    # it in the code as it will be usefull in future
-    # tx_data.print_data(0, "subscriptions", True)
-    # tx_data.print_data(0, "reccuring", False)
+    (tx_data.subscriptions_data,
+    tx_data.recurring_merchants_data) = tx_data.analyze_data()
 
     # upload the analysis result data to a new worksheet
     if not upload_results_to_worksheet(SHEET, "ANALYSIS RESULTS",
@@ -1560,12 +1528,13 @@ def main():
                                        tx_data.ANALYSIS_START_DATE,
                                        tx_data.ANALYSIS_END_DATE):
         print("\nan error occurred while uploading the data to the \
-              Google Sheet.")
+              \nGoogle Sheet.")
 
     # upload the sorted and cleaned data to a new worksheet
     # seems I am exceeding the max ressource utilization with gspread
-    # in the free account so I comment the following out but leave
+    # in the free account so I am commenting the following out but leave
     # it in the code as it will be usefull in future
+
     # if not upload_sorted_to_worksheet(SHEET, "SORTED TX DATA",
     # "SORTED AND CLEANED TRANSACTION DATA",
     # tx_data.sorted_clean_data,
