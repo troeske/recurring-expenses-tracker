@@ -109,17 +109,17 @@ def get_existing_spreadsheet():
     Open an a spreadsheet that was created through RET
     Return: the Spreadsheet object that the user wants to open
     """
-    existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
+    existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open:\n")
     
     # loop as long user entered empty string
     while existing_s_sheet =="":
-        existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
+        existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open:\n")
     
     # let's try to open the spreadsheet
     spreadsheet = open_existing_spreadsheet(existing_s_sheet)
     while not spreadsheet:
         # seems user input isn't correct, so let's ask again
-        existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open: \n")
+        existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open:\n")
         spreadsheet = open_existing_spreadsheet(existing_s_sheet)
     
     # all good now so let's return the worksheet
@@ -172,16 +172,16 @@ def wait_for_user(display_text):
     display text with y/n option
     Wait for the user until he/she presses 'y' 
     """
-    response = input(f"\n{display_text}")
+    response = input(f"\n{display_text}\n")
 
     while response == "n":
-        response = input(f"{display_text}")
+        response = input(f"{display_text}\n")
 
 def continue_RET():
     """
     ask user if she/he wants to continue or exit the program
     """
-    response = input("\nDo you want to continue with this Recurring Expense Tracker? (y/n): ")
+    response = input("\nDo you want to continue with this Recurring Expense Tracker? (y/n):\n")
     if response == "y":
         return True
     else:
@@ -202,17 +202,18 @@ def get_imported_csv_wsheet(spreadsheet):
     clean_console()
 
     print(f"You are working with the Google Sheet: '{spreadsheet.title}'")
-    ws_name = input("\nPlease enter the worksheet name where you imported the CSV file. You can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet:\n")
+    ws_name = input("\nPlease enter the worksheet name where you imported the CSV file.\
+                     You can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet:\n")
     
     # loop as long user entered empty string
     while ws_name =="":
-        ws_name = input("Please enter the worksheet name where you imported the CSV file: \n")
+        ws_name = input("Please enter the worksheet name where you imported the CSV file:\n")
     
     # let's try to select the worksheet
     worksheet = select_imported_csv_wsheet(spreadsheet, ws_name)
     while not worksheet:
         # seems user input isn't correct, so let's ask again
-        ws_name = input("Please enter the worksheet name where you imported the CSV file: \n")
+        ws_name = input("Please enter the worksheet name where you imported the CSV file:\n")
         worksheet = select_imported_csv_wsheet(spreadsheet, ws_name)
     
     # all good now so let's return the worksheet
@@ -279,7 +280,6 @@ def column_letter_to_number(column_letter):
             print("The column number is {str(column_number)}. It cannot be higher then 50")
             return False
         else:
-            # print(f"Column Number is: {str(column_number)}.")
             return column_number
     
     except Exception as e:
@@ -355,17 +355,6 @@ def import_raw_data(raw_data_wsheet):
         selected_tx_data.append(new_row)
 
     return selected_tx_data
-
-def do_you_want_to_continue(message):
-    """
-    Ask the user if she/he wants to continue
-    """
-    response = input(message)
-    
-    if response == "y":
-        return True
-    else:
-        return False
     
 def sort_key(d):
     """
@@ -621,7 +610,7 @@ def upload_sorted_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, da
             print(f"\nA worksheet with the name '{worksheet_name}' already exists in the spreadsheet: '{spreadsheet.title}'.")
             new_worksheet_name = input("Please enter a different name for the worksheet:\n")
             # let's call this function recursively to get things done with a new name for the worksheet
-            if upload_results_to_worksheet(spreadsheet, new_worksheet_name, heading_dataset1, dataset1, heading_dataset2, dataset2, start_date, end_date):
+            if upload_results_to_worksheet(spreadsheet, new_worksheet_name, heading_dataset1, dataset1, start_date, end_date):
                 return True
             else:
                 return False
@@ -711,7 +700,7 @@ class TxData:
         Return: datetime object, False in case of any error
         """
         # let's deconstruct the date string
-        # Regular expression to match dates with '.', '/', or '-' provided by ChatGPT
+        # The followeing regular expression to match dates with '.', '/', or '-' was provided by ChatGPT
         match = re.match(r'(\d{1,2})[./-](\d{1,2})[./-](\d{4})', date_str)
                 
         if not match:
@@ -1196,7 +1185,6 @@ class TxData:
                     # let's reset merchant_in_subs as the current murchant was in rec 
                     merchant_in_subs = False
 
-                
                 # Let's make the current the previous before the next loop
                 prev_tx_merchant = curr_tx_merchant
                 prev_tx_amount = curr_tx_amount
@@ -1279,6 +1267,8 @@ def main():
     tx_data.get_analysis_time_frame(tx_data.clean_tx_data)
 
     tx_data.subscriptions_data, tx_data.recurring_merchants_data = tx_data.analyze_data()
+    # seems I am exceeding the max ressource utilization with gspread in the free account so I comment the following out 
+    # but leave it in the code as it will be usefull in future
     #tx_data.print_data(0, "subscriptions", True)
     #tx_data.print_data(0, "reccuring", False)
 
