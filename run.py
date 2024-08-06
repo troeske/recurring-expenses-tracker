@@ -572,7 +572,7 @@ def upload_results_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, d
             # Append dataset rows
             append_dataset2_rows(ws_output, dataset2)
         
-        cprint(f"\nThe data has been successfully uploaded to Spreadsheet: \n'{spreadsheet.title}' | worksheet: '{worksheet_name}'", 'light.cyan')
+        print(f"\nThe data has been successfully uploaded to Spreadsheet: \n'{spreadsheet.title}' | worksheet: '{worksheet_name}'")
         print(f"\nStart date of the dataset: {convert_datetime_object_to_str(start_date)} | End date: {convert_datetime_object_to_str(end_date)}\n")
         return True
     
