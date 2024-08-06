@@ -373,7 +373,7 @@ def import_raw_data(raw_data_wsheet):
 
     # now the columns for tx_date, tx_merchant, and tx_amount
     # let's start with the transaction date column
-    message = "\nPlease enter the column letter where the \n\
+    message = "\nPlease enter the column letter where the\
         \ntransaction date is located \n(e.g. A, B, C, etc.):\n"
     tx_date_col = column_letter_to_number(input(message))
     while not tx_date_col:
@@ -383,8 +383,8 @@ def import_raw_data(raw_data_wsheet):
     tx_date_col -= 1
 
     # now the merchant column
-    message = "\nPlease enter the column letter where the \nmerchant/\
-        \nrecipient is located (e.g. A, B, C, etc.):\n"
+    message = "\nPlease enter the column letter where the \nmerchant\
+        \nor recipient is located (e.g. A, B, C, etc.):\n"
     tx_merchant_col = column_letter_to_number(input(message))
     while not tx_merchant_col:
         tx_merchant_col = column_letter_to_number(input(message))
@@ -601,16 +601,17 @@ def upload_results_to_worksheet(spreadsheet, worksheet_name,
     upload the data to the selected worksheet
     function can handle max two datasets. Each one is optional
     """
-    print("\nStarting the data upload to Google Sheets...")
+    print("\nStarting the results upload to Google Sheets...")
 
     try:
-        print("Creating new worksheet...")
+        print("Creating a new worksheet...")
         # creating the worksheet
         ws_output = spreadsheet.add_worksheet(
             title=worksheet_name, rows=1, cols=10)
 
-        print("Uploading the data. NOTE: this may \
-              \ntake a while - please be patient!...")
+        print("Uploading the data...")
+        print("NOTE: this may take a while\
+              \nplease be patient!...")
 
         # filling in the data
         if dataset1:
