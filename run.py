@@ -1034,6 +1034,32 @@ class TxData:
            print(type(e))    # the exception type
            return False, -1 
         
+    def is_subs_active(self, sub_end_date):
+        """
+        check if the current subs is active or ended in the past
+        returns: true or false
+        """
+        try:
+            if sub_end_date.day > self.ANALYSIS_END_DATE.day:
+                # if the sub_end_date day is later in the month than the ANALYSIS_END_DATE need to check if the subs tx happened last month
+                if sub_end_date.month == self.ANALYSIS_END_DATE.month -1:
+                    return True
+                else:
+                    return False
+
+            elif sub_end_date.day <= self.ANALYSIS_END_DATE.day:
+                # ok if the subs was active it should have happened on or before the ANALYSIS_END_DATE
+                if sub_end_date.month == self.ANALYSIS_END_DATE.month:
+                    return True
+                else:
+                    return False
+        
+        except Exception as e:
+            print(f"\nUnexpected  error occurred in is_subs_active: \n")
+            # from https://docs.python.org/3/tutorial/errors.html:
+            print(type(e))    # the exception type
+            return 
+
     def analyze_data(self):
         """
         Analyze the transaction data
@@ -1051,7 +1077,6 @@ class TxData:
             prev_tx_amount = round(self.sorted_clean_data[0][TX_AMOUNT_KEY],2)
             total_sum = round(self.sorted_clean_data[0][TX_AMOUNT_KEY], 2)
             merchant_sum = round(self.sorted_clean_data[0][TX_AMOUNT_KEY],2)
-            merchant_last_date = self.sorted_clean_data[0][TX_DATE_KEY]
             merchant_last_amount_paid = round(self.sorted_clean_data[0][TX_AMOUNT_KEY], 2)
             
             subs_active = False
@@ -1072,7 +1097,7 @@ class TxData:
                     # updating the total sum for this merchant
                     num_merchant_tx += 1   
 
-                    if i == 43:
+                    if i == 41:
                         print("23")
 
                     # let's check if this merchant already exists in the subscription_data list
@@ -1082,20 +1107,18 @@ class TxData:
                     if is_tx_subscription:
                             #### EUREKA we have ourselves a subscritpion  ####
 
-                            # let's check if the subscription was active at the end of the period of the dataset
-                            if merchant_last_date.month == self.ANALYSIS_END_DATE.month:
-                                subs_active = True
-                            else:
-                                subs_active = False
-                            
                             if not merchant_in_subs:
                                 # ok, it's a subscription but we do not have the merchant in the subs list yet, so let's build a new entry to the subscriptions_data list
+                                
+                                # let's check if the subscription was active at the end of the period of the dataset
+                                subs_active = self.is_subs_active(prev_tx_date)
+                                
                                 new_subs_list_entry = {
                                                     TX_MERCHANT_KEY: curr_tx_merchant, 
                                                     "subs_day": curr_tx_date.day, # subscriptions should happen around the same day so let's save curent tx date and update further as we work backwords in time
                                                     TX_AMOUNT_KEY: merchant_last_amount_paid, # as the entries in the list get older this is the last amount paid and will not get updated
                                                     "subs_start_date": curr_tx_date, # will be updated further as we work backwords in time
-                                                    "subs_end_date": merchant_last_date, # as the entries in the list get older this is the last date the subscription was paid and will not get updated
+                                                    "subs_end_date": prev_tx_date, # as this is the second pass at this merchant we need to take the previous tx_date as last date
                                                     "subs_frequency": subs_frequency,
                                                     "subs_merchant_sum": merchant_sum,
                                                     "num_subs_tx": num_merchant_tx,
@@ -1109,8 +1132,8 @@ class TxData:
                                 self.subscriptions_data[subs_index]["subs_start_date"] = curr_tx_date # as the tx_dates get older let's update the start_date to what we know in this loop
                                 self.subscriptions_data[subs_index]["subs_day"] = curr_tx_date.day # update further as we work backwords in time
                                 self.subscriptions_data[subs_index]["subs_merchant_sum"] = merchant_sum
+                                self.subscriptions_data[subs_index]["subs_frequency"] = subs_frequency 
                                 self.subscriptions_data[subs_index]["num_subs_tx"] = num_merchant_tx 
-                                self.subscriptions_data[subs_index]["active"] = subs_active
 
                     else:
                         if merchant_in_subs:
@@ -1132,7 +1155,7 @@ class TxData:
                                                 "subs_frequency": subs_frequency,
                                                 "subs_merchant_sum": merchant_sum,
                                                 "num_subs_tx": num_merchant_tx,
-                                                "active": subs_active 
+                                                "active": False # as we only end up here if the subscription has changed and since we are going back in time the sub cannot be active
                                                  }
                             # let's add the merchant to the list
                             self.subscriptions_data.append(new_subs_list_entry)
@@ -1147,7 +1170,7 @@ class TxData:
                                 # build a new entry to the subscriptions_data list
                                 new_merchands_list_entry = {
                                                     TX_MERCHANT_KEY: curr_tx_merchant,
-                                                    "last_tx_date" : merchant_last_date,
+                                                    "last_tx_date" : prev_tx_date, # as this is the second pass at this merchant we need to take the previous tx_date as last date
                                                     "first_tx_date": curr_tx_date,
                                                     "last_tx_amount": merchant_last_amount_paid,
                                                     "merchant_sum": merchant_sum,
@@ -1168,7 +1191,6 @@ class TxData:
                     # let's reset the counters
                     merchant_sum = curr_tx_amount 
                     num_merchant_tx = 1
-                    merchant_last_date = self.sorted_clean_data[i][TX_DATE_KEY]
                     merchant_last_amount_paid = round(self.sorted_clean_data[i][TX_AMOUNT_KEY], 2) 
                     
                     # let's reset merchant_in_subs as the current murchant was in rec 
@@ -1257,8 +1279,8 @@ def main():
     tx_data.get_analysis_time_frame(tx_data.clean_tx_data)
 
     tx_data.subscriptions_data, tx_data.recurring_merchants_data = tx_data.analyze_data()
-    tx_data.print_data(0, "subscriptions", True)
-    tx_data.print_data(0, "reccuring", False)
+    #tx_data.print_data(0, "subscriptions", True)
+    #tx_data.print_data(0, "reccuring", False)
 
     # upload the analysis result data to a new worksheet
     if not upload_results_to_worksheet(SHEET, "ANALYSIS RESULTS", "SUBSCRIPTIONS", tx_data.subscriptions_data, "MERCHANT WITH MULTIPLE PURCHASES", tx_data.recurring_merchants_data,  tx_data.ANALYSIS_START_DATE, tx_data.ANALYSIS_END_DATE):
