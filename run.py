@@ -111,7 +111,7 @@ def get_existing_spreadsheet():
     Return: the Spreadsheet object that the user wants to open
     """
     try:   
-        'cprint("ATTENTION: DO NOT USE KEYBOARD SHORTCUTS.\nThis will cause an error in the terminal", 'red')
+        #cprint("ATTENTION: DO NOT USE KEYBOARD SHORTCUTS.\nThis will cause an error in the terminal", 'red')
         cprint("IMPORTANT! Please use right mause click and copy/past from there!\n", 'light_cyan')
         existing_s_sheet = input("Please paste the URL of the Spreadsheet you want to open:\n")
 
