@@ -111,10 +111,10 @@ def get_existing_spreadsheet():
     Return: the Spreadsheet object that the user wants to open
     """
     try:   
-        cprint("ATTENTION: DO NOT USE KEYBOARD SHORTCUTS. This will cause an error in the terminal", 'red')
-        cprint("Please use right mause click and copy/past from there!\n", 'light_cyan')
+        'cprint("ATTENTION: DO NOT USE KEYBOARD SHORTCUTS.\nThis will cause an error in the terminal", 'red')
+        cprint("IMPORTANT! Please use right mause click and copy/past from there!\n", 'light_cyan')
         existing_s_sheet = input("Please paste the URL of the Spreadsheet you want to open:\n")
-        
+
         # loop as long user entered empty string
         while existing_s_sheet =="":
             existing_s_sheet = input("Please paste the URL of the Spreadsheet you want to open:\n")
@@ -161,9 +161,14 @@ def open_existing_spreadsheet(existing_ssheet):
         print(f"\nAn error occurred trying to access the spreadsheet: {e}")
         return
     
+    except KeyboardInterrupt:
+        print("\nthis is a test: KeyboardInterrupt in open_existing_spreadsheet()\n")
+
     except PermissionError:
         print(f"\nRET does not have permission to access this spreadsheet. \
-                \nYou can add RET as an editor to the spreadsheet.\
+                \nYou can add RET as an editor to the spreadsheet.")
+        cprint("\nKEEP IN MIND: always use right mouse click to copy/paste!", 'light_cyan')
+        print(f"\
                 \nClick Share on the upper right corner of the Google Sheet and add:\
                 \n\n{CREDS.service_account_email}\
                 \n\nPlease select 'Editor' and uncheck: 'Notify people'\
@@ -213,23 +218,34 @@ def get_imported_csv_wsheet(spreadsheet):
 
     clean_console()
 
-    print(f"You are working with the Google Sheet: '{spreadsheet.title}'")
-    ws_name = input("\nPlease enter the worksheet name where you imported the CSV file.\
-                     You can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet:\n")
-    
-    # loop as long user entered empty string
-    while ws_name =="":
-        ws_name = input("Please enter the worksheet name where you imported the CSV file:\n")
-    
-    # let's try to select the worksheet
-    worksheet = select_imported_csv_wsheet(spreadsheet, ws_name)
-    while not worksheet:
-        # seems user input isn't correct, so let's ask again
-        ws_name = input("Please enter the worksheet name where you imported the CSV file:\n")
+    try:
+        print(f"You are working with the Google Sheet: '{spreadsheet.title}'")
+        cprint("KEEP IN MIN: please use right mause click and copy/past from there!\n", 'light_cyan')
+
+        ws_name = input("\nPlease enter the worksheet name where you imported the CSV file.\
+                        You can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet:\n")
+        
+        # loop as long user entered empty string
+        while ws_name =="":
+            ws_name = input("Please enter the worksheet name where you imported the CSV file:\n")
+        
+        # let's try to select the worksheet
         worksheet = select_imported_csv_wsheet(spreadsheet, ws_name)
+        while not worksheet:
+            # seems user input isn't correct, so let's ask again
+            ws_name = input("Please enter the worksheet name where you imported the CSV file:\n")
+            worksheet = select_imported_csv_wsheet(spreadsheet, ws_name)
+        
+        # all good now so let's return the worksheet
+        return worksheet
     
-    # all good now so let's return the worksheet
-    return worksheet
+    except Exception as e:
+        print(f"\nUnexpected error occurred in get_imported_csv_wsheet(): \n")
+        print("Please keep in mind to not use keyboad shortcuts")
+        print("use right mouse click menue instead")
+        # from https://docs.python.org/3/tutorial/errors.html:
+        print(type(e))    # the exception type
+        get_imported_csv_wsheet(spreadsheet)
 
 
 def select_imported_csv_wsheet(spreadsheet, ws_name):
