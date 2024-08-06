@@ -169,12 +169,10 @@ def open_existing_spreadsheet(existing_ssheet):
                 \nYou can add RET as an editor to the spreadsheet.")
         print(f"\
                 \nClick Share on the upper right corner of the Google Sheet and add:")
-        cprint("\nKEEP IN MIND: always use right mouse click to copy/paste!", 'light_cyan')
-        print(f"\n\n{CREDS.service_account_email}\
-                \n\nPlease select 'Editor' and uncheck: 'Notify people'\
+        print(f"\n\n{CREDS.service_account_email}")
+        cprint("KEEP IN MIND: always use right mouse click to copy/paste!", 'light_cyan')
+        print("\n\nPlease select 'Editor' and uncheck: 'Notify people'\
                 \nThen try again.")
-        
-        
         return False
 
     except Exception as e:
