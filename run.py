@@ -39,26 +39,22 @@ def intro_go_on():
     clean_console()
 
     cprint("Welcome to the Recurring Expense Tracker: RET!\n", 'red')
-    print("You can import your bank account and/or \
-          \ncredit card transaction data into RET.")
-    print("RET will sort through all the transaction \
-          \ndata and provide you with")
-    print("a list of recurring expenses and subscriptions.\n")
-    print("To provide a platform for you to manage your \
-          \nrecurring expenses,")
-    print("RET will use Google Sheets to let you import your \
-          \nCSV files and")
-    print("provide the output for you as well.\n")
-    print("If you like, RET can create a new Google Spreadsheet and \
+    print("You can import your bank account and/or credit card\
+          \ntransaction data into RET.")
+    print("RET will sort through all the transaction\
+          \ndata and provide you with a list of recurring expenses\
+          \nand subscriptions. To provide a platform for you to\
+          \nmanage your recurring expenses,")
+    print("RET will use Google Sheets to let you import your\
+          \nCSV files and provide the output for you as well.\n")
+    print("If you like, RET can create a new Google Spreadsheet and\
           \nshare it with you.")
     print("If you already have one please select option 2. below.\n")
-    print("Let's get started!\n")
 
-    cprint("\
-        \nHow do you want to continue?\n \
-        \nPress \
-        \n1: to create a new Spreadsheet \
-        \n2: for re-using one previsously created (through RET or by you) \
+    cprint("How do you want to continue?\n\
+        \nPress\
+        \n1: to create a new Spreadsheet\
+        \n2: for re-using one previsously created (through RET or by you)\
         \nAny other key to EXIT:", 'red')
 
     go_on = input("\n")
