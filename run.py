@@ -832,19 +832,28 @@ class TxData:
 
 
     
-    def sort_data(self, data):
+    def sort_data(self, data, mode):
         """
         Sort the transaction data
         Creates class attribute (list of dictionaries) sorted_selected_raw_tx_data
         """
-        # sort the data by merchant and date in reverse order to look for active subscriptions, 
-        # learned from GeeksforGeeks/w3 schools
-        sorted_data = sorted(
-            data,
-            key=lambda x: (x[TX_MERCHANT_KEY], x[TX_DATE_KEY]), 
-            reverse=True
-            )
-        
+        if mode == "merch_date":
+            # sort the data by merchant and date in reverse order  
+            # learned from GeeksforGeeks/w3 schools
+            sorted_data = sorted(
+                data,
+                key=lambda x: (x[TX_MERCHANT_KEY], x[TX_DATE_KEY]), 
+                reverse=True
+                )
+        elif mode == "date":
+            # sort the data date in normal order 
+            # learned from GeeksforGeeks/w3 schools
+            sorted_data = sorted(
+                data,
+                key=lambda x: (x[TX_DATE_KEY]), 
+                reverse=False
+                )
+
         return sorted_data
 
         
@@ -935,13 +944,14 @@ class TxData:
            print(type(e))    # the exception type
            return False 
 
-    def get_analysis_time_frame(self):
+    def get_analysis_time_frame(self, dataset):
         """
         Finds the date of the first and last transaction in the data set 
         Sets class attribute ANALYSIS_START_DATE and ANALYSIS_END_DATE
         """
-        self.ANALYSIS_END_DATE = self.sorted_clean_data[len(self.clean_tx_data)-1][TX_DATE_KEY]
-        self.ANALYSIS_START_DATE = self.sorted_clean_data[0][TX_DATE_KEY]
+        sorted_dataset = self.sort_data(dataset, "date")
+        self.ANALYSIS_END_DATE = sorted_dataset[len(self.clean_tx_data)-1][TX_DATE_KEY]
+        self.ANALYSIS_START_DATE = sorted_dataset[0][TX_DATE_KEY]
 
     def merchant_in_list(self, data_list, tx_merchant):
         """
@@ -1062,7 +1072,7 @@ class TxData:
                     # updating the total sum for this merchant
                     num_merchant_tx += 1   
 
-                    if i == 22:
+                    if i == 43:
                         print("23")
 
                     # let's check if this merchant already exists in the subscription_data list
@@ -1109,15 +1119,16 @@ class TxData:
                             
                             # restartiung the  total sum for this new subscription at the merchant
                             merchant_sum = curr_tx_amount 
+                        
                             # let's restart the count how many times we shopped at that merchant
                             num_merchant_tx = 1   
 
                             new_subs_list_entry = {
                                                 TX_MERCHANT_KEY: curr_tx_merchant, 
                                                 "subs_day": curr_tx_date.day, # subscriptions should happen around the same day so let's save curent tx date and update further as we work backwords in time
-                                                TX_AMOUNT_KEY: merchant_last_amount_paid, # as the entries in the list get older this is the last amount paid and will not get updated
+                                                TX_AMOUNT_KEY: curr_tx_amount, # as the entries in the list get older this is the last amount paid and will not get updated
                                                 "subs_start_date": curr_tx_date, # will be updated further as we work backwords in time
-                                                "subs_end_date": merchant_last_date, # as the entries in the list get older this is the last date the subscription was paid and will not get updated
+                                                "subs_end_date": curr_tx_date, # when this entry is created we set the current date as the end-date as we go back in time through the list this will not be updated
                                                 "subs_frequency": subs_frequency,
                                                 "subs_merchant_sum": merchant_sum,
                                                 "num_subs_tx": num_merchant_tx,
@@ -1240,10 +1251,10 @@ def main():
 
     # sort the cleaned data
     print("Sorting the cleaned transaction data...")
-    tx_data.sorted_clean_data = tx_data.sort_data(tx_data.clean_tx_data)
+    tx_data.sorted_clean_data = tx_data.sort_data(tx_data.clean_tx_data, "merch_date")
 
     #finding start and end date of dataset
-    tx_data.get_analysis_time_frame()
+    tx_data.get_analysis_time_frame(tx_data.clean_tx_data)
 
     tx_data.subscriptions_data, tx_data.recurring_merchants_data = tx_data.analyze_data()
     tx_data.print_data(0, "subscriptions", True)
