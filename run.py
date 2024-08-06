@@ -74,7 +74,7 @@ def get_user_email():
     user_email = input("Enter your email address: ")
     while not validate_email(user_email):
         print("The email address you entered is not a \
-              valid email address. Please try again.")
+            \nvalid email address. Please try again.")
         user_email = input("Enter your email address:\n")
 
     return user_email
@@ -1456,9 +1456,12 @@ def main():
         print(user_email)
 
         SHEET = create_spreadsheet(user_email)
-        print(f"\nSuccessfully created Google Spreadsheet: {SHEET.title}\n")
-        print("You can access your worksheet at the following link:\n")
+        print(f"\nSuccessfully created Google Spreadsheet: '{SHEET.title}'\n")
+        print("Google has sent you a link the Spreadsheet. Alternativly,\n")
+        print("you can access your worksheet at the following link:\n")
         print(SHEET.url)
+        cprint("\nIMPORTANT! Please use right mouse click and \
+               \ncopy/past from there!\n", 'light_cyan')
 
         wait_for_user("Have you opened the Google Sheet? (y/n): ")
 
