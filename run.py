@@ -111,8 +111,7 @@ def get_existing_spreadsheet():
     Return: the Spreadsheet object that the user wants to open
     """
     try:   
-        #cprint("ATTENTION: DO NOT USE KEYBOARD SHORTCUTS.\nThis will cause an error in the terminal", 'red')
-        cprint("IMPORTANT! Please use right mause click and copy/past from there!\n", 'light_cyan')
+        cprint("IMPORTANT! Please use right mouse click and copy/past from there!\n", 'light_cyan')
         existing_s_sheet = input("Please paste the URL of the Spreadsheet you want to open:\n")
 
         # loop as long user entered empty string
@@ -167,12 +166,13 @@ def open_existing_spreadsheet(existing_ssheet):
     except PermissionError:
         print(f"\nRET does not have permission to access this spreadsheet. \
                 \nYou can add RET as an editor to the spreadsheet.")
-        cprint("\nKEEP IN MIND: always use right mouse click to copy/paste!", 'light_cyan')
         print(f"\
                 \nClick Share on the upper right corner of the Google Sheet and add:\
                 \n\n{CREDS.service_account_email}\
                 \n\nPlease select 'Editor' and uncheck: 'Notify people'\
                 \nThen try again.")
+        
+        cprint("\nKEEP IN MIND: always use right mouse click to copy/paste!", 'light_cyan')
         return False
 
     except Exception as e:
@@ -220,7 +220,7 @@ def get_imported_csv_wsheet(spreadsheet):
 
     try:
         print(f"You are working with the Google Sheet: '{spreadsheet.title}'")
-        cprint("KEEP IN MIN: please use right mause click and copy/past from there!\n", 'light_cyan')
+        #cprint("KEEP IN MIND: please use right mause click and copy/past from there!\n", 'light_cyan')
 
         ws_name = input("\nPlease enter the worksheet name where you imported the CSV file.\
                         You can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet:\n")
