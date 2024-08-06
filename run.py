@@ -1079,21 +1079,21 @@ class TxData:
                           {str(self.subscriptions_data[i]["active"])}")
 
                 elif what_data == "reccuring":
-                    print(f"{self.recurring_merchants_data[i]
-                             [TX_MERCHANT_KEY]} |
-                          {self.recurring_merchants_data[i]
-                           ["last_tx_date"]} |
-                          {self.recurring_merchants_data[i]
-                           ["first_tx_date"]} |
-                          {self.recurring_merchants_data[i]
-                           ["last_tx_amount"]} |
-                          {self.recurring_merchants_data[i]
-                           ["merchant_sum"]} |
-                          {self.recurring_merchants_data[i]
-                           ["num_tx"]}")
+                    row = "{self.recurring_merchants_data[i][TX_MERCHANT_KEY]}"
+                    row += " | "
+                    row += "{self.recurring_merchants_data[i]['last_tx_date']}"
+                    row += " | "
+                    row += "{self.recurring_merchants_data[i]['first_tx_date']}"
+                    row += " | "
+                    row += "{self.recurring_merchants_data[i]['last_tx_amount']}"
+                    row += " | "
+                    row += "{self.recurring_merchants_data[i]['merchant_sum']}"
+                    row += " | "
+                    row += "{self.recurring_merchants_data[i]['num_tx']}"
+                    print(f"{row}")
 
         except Exception as e:
-            print(f"\nUnexpected  error occurred in
+            print(f"\nUnexpected  error occurred in \
                   print_data({what_data}): \n")
             # from https://docs.python.org/3/tutorial/errors.html:
             print(type(e))    # the exception type
