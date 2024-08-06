@@ -220,10 +220,11 @@ def get_imported_csv_wsheet(spreadsheet):
 
     try:
         print(f"You are working with the Google Sheet: '{spreadsheet.title}'")
-        #cprint("KEEP IN MIND: please use right mause click and copy/past from there!\n", 'light_cyan')
 
-        ws_name = input("\nPlease enter the worksheet name where you imported the CSV file.\
-                        You can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet:\n")
+        print("\nPlease enter the worksheet name where you imported the CSV file.")
+        print("\nYou can do this by double-clicking on the Sheet Name (e.g. 'Sheet1') in footer of the Spreadsheet.")
+        cprint("KEEP IN MIND: always use right mouse click to copy/paste!\n", 'light_cyan')
+        ws_name = input("Sheet name:\n")
         
         # loop as long user entered empty string
         while ws_name =="":
@@ -571,7 +572,7 @@ def upload_results_to_worksheet(spreadsheet, worksheet_name, heading_dataset1, d
             # Append dataset rows
             append_dataset2_rows(ws_output, dataset2)
         
-        print(f"\nThe data has been successfully uploaded to Spreadsheet: \n{spreadsheet.title} | worksheet: {worksheet_name}.")
+        cprint(f"\nThe data has been successfully uploaded to Spreadsheet: \n'{spreadsheet.title}' | worksheet: '{worksheet_name'}", 'light.cyan')
         print(f"\nStart date of the dataset: {convert_datetime_object_to_str(start_date)} | End date: {convert_datetime_object_to_str(end_date)}\n")
         return True
     
