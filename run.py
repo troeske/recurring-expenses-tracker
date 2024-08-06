@@ -36,7 +36,7 @@ def intro_go_on():
     """
     clean_console()
 
-    print("Welcome to the Recurring Expense Tracker: RET!\n")
+    cprint("Welcome to the Recurring Expense Tracker: RET!\n", 'red')
     print("You can import your bank account and/or credit card transaction data into RET.")
     print("RET will sort through all the transaction data and provide you with")
     print("a list of recurring expenses and subscriptions.\n")
@@ -110,21 +110,32 @@ def get_existing_spreadsheet():
     Open an a spreadsheet that was created through RET
     Return: the Spreadsheet object that the user wants to open
     """
-    existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open:\n")
-    
-    # loop as long user entered empty string
-    while existing_s_sheet =="":
-        existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open:\n")
-    
-    # let's try to open the spreadsheet
-    spreadsheet = open_existing_spreadsheet(existing_s_sheet)
-    while not spreadsheet:
-        # seems user input isn't correct, so let's ask again
-        existing_s_sheet = input("Please enter the URL of the Spreadsheet you want to open:\n")
+    try:   
+        cprint("ATTENTION: DO NOT USE KEYBOARD SHORTCUTS. This will cause an error in the terminal", 'red')
+        cprint("Please use right mause click and copy/past from there!\n", 'light_cyan')
+        existing_s_sheet = input("Please paste the URL of the Spreadsheet you want to open:\n")
+        
+        # loop as long user entered empty string
+        while existing_s_sheet =="":
+            existing_s_sheet = input("Please paste the URL of the Spreadsheet you want to open:\n")
+        
+        # let's try to open the spreadsheet
         spreadsheet = open_existing_spreadsheet(existing_s_sheet)
+        while not spreadsheet:
+            # seems user input isn't correct, so let's ask again
+            existing_s_sheet = input("Please paste the URL of the Spreadsheet you want to open:\n")
+            spreadsheet = open_existing_spreadsheet(existing_s_sheet)
+        
+        # all good now so let's return the worksheet
+        return spreadsheet
     
-    # all good now so let's return the worksheet
-    return spreadsheet
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        # from https://docs.python.org/3/tutorial/errors.html:
+        print(type(e))    # the exception type
+        print("Please try again.")
+        get_existing_spreadsheet()
+    
 
 def open_existing_spreadsheet(existing_ssheet):
     """
