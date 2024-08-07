@@ -196,6 +196,16 @@ no tutorials were used.
 W3Schools: https://www.w3schools.com/
 MDN Web Docs: https://developer.mozilla.org/en-US/
 GeeksForGeeks: https://www.geeksforgeeks.org/
+               https://www.geeksforgeeks.org/python-validate-string-date-format/
+               https://www.geeksforgeeks.org/python-output-formatting/
+python.org: https://docs.python.org/3/tutorial/errors.html:
+Sololearn: https://www.sololearn.com/en/Discuss/3220821/how-how-to-delete-printed-text
+pyt5on.org: https://docs.python.org/3/tutorial/datastructures.html
+askpython: https://www.askpython.com/python/examples/find-number-of-days-in-month
+finxter: https://blog.finxter.com/5-effective-ways-to-check-if-a-string-can-be-converted-to-a-datetime-in-python/
+GSPREAD Docs: https://docs.gspread.org/en/latest/user-guide.html#creating-a-worksheet
+Pypi: https://pypi.org/project/gspread-formatting/
+
 
 Github Copilot provided the core of following functions:
 
