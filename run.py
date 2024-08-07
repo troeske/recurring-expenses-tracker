@@ -812,9 +812,9 @@ def check_import_raw_data(sheet, tx_data):
 
     try:
         selected_raw_tx_data = []
-        data_ok = "n"
+        is_data_clean = False
 
-        while not clean_data:
+        while not is_data_clean:
             # import raw transaction data from the worksheet
             selected_raw_tx_data = import_raw_data(sheet)
 
@@ -824,7 +824,7 @@ def check_import_raw_data(sheet, tx_data):
 
             raw_data_ok = raw_data_ok.strip().lower()
             if raw_data_ok == "n":
-                clean_data = False
+                is_data_clean = False
 
             else:
                 # let's check the date format of the input data
@@ -840,14 +840,13 @@ def check_import_raw_data(sheet, tx_data):
                     if try_again == "n":
                         return False
                     else:
-                        clean_data = False
+                        is_data_clean = False
 
                 else:
-                    clean_data = True
+                    is_data_clean = True
 
         print("The raw transaction data has been successfully imported.\n")
         tx_data.clean_tx_data = clean_data
-        # data os ok, so let's start the data analysis
         tx_data.selected_raw_tx_data = selected_raw_tx_data
         return True
 
