@@ -814,33 +814,45 @@ def check_import_raw_data(sheet, tx_data):
         selected_raw_tx_data = []
         data_ok = "n"
 
-        while data_ok != "y":
+        while not clean_data:
             # import raw transaction data from the worksheet
             selected_raw_tx_data = import_raw_data(sheet)
 
             print_data(10, selected_raw_tx_data, True)
-            data_ok = input("\nDo you want to continue with the data? \
+            raw_data_ok = input("\nDo you want to continue with the data? \
                     \n(y/n):\n")
 
-            data_ok = data_ok.strip().lower()
+            raw_data_ok = raw_data_ok.strip().lower()
+            if raw_data_ok == "n":
+                clean_data = False
 
-            # let's check the date format of the input data
-            tx_data.check_date_format(selected_raw_tx_data)
-
-            # clean up the tx data row by row
-            print("Cleaning up the imported transaction data...")
-            clean_data = tx_data.clean_up_tx_data(selected_raw_tx_data)
-            if not clean_data:
-                cprint(message, 'red')
-                data_ok = "n"
             else:
-                print("The raw transaction data has been successfully imported.\n")
-                data_ok = "y"
+                # let's check the date format of the input data
+                tx_data.check_date_format(selected_raw_tx_data)
 
-        return selected_raw_tx_data, clean_data
+                # clean up the tx data row by row
+                print("Cleaning up the imported transaction data...")
+                clean_data = tx_data.clean_up_tx_data(selected_raw_tx_data)
+                if not clean_data:
+                    cprint(message, 'red')
+                    try_again = input("(y/n):\n")
+                    try_again = try_again.strip().lower()
+                    if try_again == "n":
+                        return False
+                    else:
+                        clean_data = False
+
+                else:
+                    clean_data = True
+
+        print("The raw transaction data has been successfully imported.\n")
+        tx_data.clean_tx_data = clean_data
+        # data os ok, so let's start the data analysis
+        tx_data.selected_raw_tx_data = selected_raw_tx_data
+        return True
 
     except Exception as e:
-        print(f"\nUnexpected  error occurred in analyze_data: \n")
+        print(f"\nUnexpected  error occurred in check_inport_raw_data: \n")
         # from https://docs.python.org/3/tutorial/errors.html:
         print(type(e))  # the exception type
         return False
@@ -1505,19 +1517,11 @@ def main():
     # let's instantiate the class as we need it's methods now
     tx_data = TxData()
 
-    selected_raw_tx_data = []
-    clean_data = []
-
-    (selected_raw_tx_data,
-     clean_data) = check_import_raw_data(RAW_DATA_WSHEET, tx_data)
-    if not selected_raw_tx_data:
+    clean_data = check_import_raw_data(RAW_DATA_WSHEET, tx_data)
+    if not clean_data:
         cprint("Transaction Data you provided could not be processed. \
                \nGoood buy!", 'red')
         return
-
-    # data os ok, so let's start the data analysis
-    tx_data.selected_raw_tx_data = selected_raw_tx_data
-    tx_data.clean_tx_data = clean_data
 
     clean_console()
 
