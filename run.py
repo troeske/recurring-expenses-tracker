@@ -1091,40 +1091,49 @@ class TxData:
         Return: clean_tx_data
         """
         convert_error_count = 0
-        num_rows = len(selected_raw_tx_data)
+        num_rows = len(selected_raw_tx_data)-1
         for i in range(num_rows):
-            # clean up the date
-            date_str = selected_raw_tx_data[i][TX_DATE_KEY]
-            clean_date = self.clean_date(date_str)
-            if not clean_date:
-                convert_error_count += 1
+            try:
+                # clean up the date
+                date_str = selected_raw_tx_data[i][TX_DATE_KEY]
+                clean_date = self.clean_date(date_str)
+                if not clean_date:
+                    convert_error_count += 1
 
-            # clean up the amount
-            amount_str = selected_raw_tx_data[i][TX_AMOUNT_KEY]
-            clean_amount = self.clean_amount(amount_str)
-            if not clean_amount:
-                convert_error_count += 1
+                # clean up the amount
+                amount_str = selected_raw_tx_data[i][TX_AMOUNT_KEY]
+                clean_amount = self.clean_amount(amount_str)
+                if not clean_amount:
+                    convert_error_count += 1
 
-            # clean up the merchant
-            merchant_str = selected_raw_tx_data[i][TX_MERCHANT_KEY]
-            clean_merchant = self.clean_merchant(merchant_str)
-            if not clean_merchant:
-                convert_error_count += 1
-           
-            # let's check if we are within the error tolerance
-            if convert_error_count < num_rows * INPUT_DATA_ERROR_TOLERANCE:
-                new_row = {
-                    ROW_KEY: i,
-                    TX_DATE_KEY: clean_date,
-                    TX_MERCHANT_KEY: clean_merchant,
-                    TX_AMOUNT_KEY: clean_amount
-                    }
+                # clean up the merchant
+                merchant_str = selected_raw_tx_data[i][TX_MERCHANT_KEY]
+                clean_merchant = self.clean_merchant(merchant_str)
+                if not clean_merchant:
+                    convert_error_count += 1
+            
+                # let's check if we are within the error tolerance
+                if convert_error_count < num_rows * INPUT_DATA_ERROR_TOLERANCE:
+                    new_row = {
+                        ROW_KEY: i,
+                        TX_DATE_KEY: clean_date,
+                        TX_MERCHANT_KEY: clean_merchant,
+                        TX_AMOUNT_KEY: clean_amount
+                        }
 
-                self.clean_tx_data.append(new_row)
-            else:
-                print(f"Too many errors in the data. Please check \
-                      the data and try again.")
+                    self.clean_tx_data.append(new_row)
+                else:
+                    print(f"Too many errors in the data. Please check \
+                        the data and try again.")
+                    return False
+
+            except Exception as e:
+                print(f"\nUnexpected error occurred in clean_up_tx_data: \n")
+                # from https://docs.python.org/3/tutorial/errors.html:
+                print(type(e))    # the exception type
                 return False
+        
+        return True
 
     def get_analysis_time_frame(self, dataset):
         """
@@ -1543,14 +1552,13 @@ def main():
     tx_data = TxData()
 
     selected_raw_tx_data = check_import_raw_data(RAW_DATA_WSHEET, tx_data)
-    if len(selected_raw_tx_data) > 0:
-        # let's start the data analysis
-        tx_data.set_tx_dataset(selected_raw_tx_data)
-
-    else:
+    if not selected_raw_tx_data:
         cprint("Transaction Data you provided could not be processed. \
                \nGoood buy!", 'red')
         return
+
+    # data os ok, so let's start the data analysis
+    tx_data.set_tx_dataset(selected_raw_tx_data)
 
     clean_console()
 
