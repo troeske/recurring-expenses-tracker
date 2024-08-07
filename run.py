@@ -763,6 +763,77 @@ def upload_sorted_to_worksheet(spreadsheet, worksheet_name,
         print(type(e))    # the exception type
         return False
 
+def print_data(number_of_rows, data, clean):
+    """
+    Print the provided number_of_rows of the data requested
+
+    Paramaters:
+    number_of_rows: number_of_rows to be printed. 0: print all rows
+    data: dataset
+    clean: True -> clean the console windows before output
+    """
+    if clean:
+        clean_console()
+
+    print(f"Here is the raw data:\n")
+
+    try:
+        if number_of_rows == 0:
+            number_of_rows = len(data)
+
+        print(f"{'Row:':<5} | "
+                f"{'Date:':<11} | "
+                f"{'Merchant/Recepient:':<30} | "
+                f"{'Amount:':<10}\n")
+
+
+        for i in range(number_of_rows):
+            r = data[i][ROW_KEY]
+            d = data[i][TX_DATE_KEY]
+            m = data[i][TX_MERCHANT_KEY]
+            a = data[i][TX_AMOUNT_KEY]
+            print(f"{r:<5} | "
+                    f"{d:<11} | "
+                    f"{m:<30} | "
+                    f"{a:<10}")
+
+    except Exception as e:
+        print(f"\nUnexpected  error occurred in \
+                print_data(): \n")
+        # from https://docs.python.org/3/tutorial/errors.html:
+        print(type(e))    # the exception type
+        return False
+
+def check_import_raw_data(sheet):
+    """
+    Check the raw data for any errors and import
+    """
+
+    try:
+        selected_raw_tx_data = []
+        data_ok = "n"
+
+        while data_ok.strip().lower() != "y"
+            # import raw transaction data from the worksheet
+            selected_raw_tx_data = import_raw_data(sheet)
+
+            print_data(10, selected_raw_tx_data, True)
+            data_ok = input("\nDo you want to continue with the data? \
+                    \n(y/n):\n")
+
+            print(f"\nOK, please check '{sheet.title}' and let's \
+                \ntry again")
+
+        print("The raw transaction data has been successfully imported.\n")
+        return True
+
+    except Exception as e:
+        print(f"\nUnexpected  error occurred in analyze_data: \n")
+        # from https://docs.python.org/3/tutorial/errors.html:
+        print(type(e))  # the exception type
+        return
+
+
 
 #################################################################
 # CLASS TxData                                                  #
@@ -991,95 +1062,6 @@ class TxData:
                 )
 
         return sorted_data
-
-    def print_data(self, number_of_rows, what_data, clean):
-        """
-        Print the provided number_of_rows of the data requested
-
-        Paramaters:
-        number_of_rows: number_of_rows to be printed. 0: print all rows
-        what_data: data to be printed -> 'raw'. 'clean', 'sorted',
-        'subscriptions'
-        clean: True -> clean the console windows before output
-        """
-        if clean:
-            clean_console()
-
-        print(f"Here is the {what_data} data:\n")
-
-        try:
-            if what_data == "raw":
-                if number_of_rows == 0:
-                    number_of_rows = len(self.selected_raw_tx_data)
-
-                print(f"{'Row:':<5} | "
-                      f"{'Date:':<11} | "
-                      f"{'Merchant/Recepient:':<30} | "
-                      f"{'Amount:':<10}\n")
-
-            elif what_data == "clean":
-                if number_of_rows == 0:
-                    number_of_rows = len(self.clean_tx_data)
-
-                print(f"Date   | Merchant/Recepient       | Amount\n")
-
-            elif what_data == "sorted":
-                if number_of_rows == 0:
-                    number_of_rows = len(self.sorted_clean_data)
-
-                print(f"Date   | DAY | Merchant/Recepient        | Amount\n")
-
-            elif what_data == "subscriptions":
-                if number_of_rows == 0:
-                    number_of_rows = len(self.subscriptions_data)
-
-                print(f"Merchant/Recepient     | DAY | Amount   | Start   \
-                      | End      | Frequency | Sum      | Reps | Active | \n")
-
-            else:
-                print("print mode not supported\n")
-                return
-
-            for i in range(number_of_rows):
-                if what_data == "raw":
-                    r = self.selected_raw_tx_data[i][ROW_KEY]
-                    d = self.selected_raw_tx_data[i][TX_DATE_KEY]
-                    m = self.selected_raw_tx_data[i][TX_MERCHANT_KEY]
-                    a = self.selected_raw_tx_data[i][TX_AMOUNT_KEY]
-                    print(f"{r:<5} | "
-                          f"{d:<11} | "
-                          f"{m:<30} | "
-                          f"{a:<10}")
-
-                elif what_data == "clean":
-                    print(f"{self.clean_tx_data[i][TX_DATE_KEY]} \
-                          | {self.clean_tx_data[i][TX_DATE_KEY].day} \
-                          | {self.clean_tx_data[i][TX_MERCHANT_KEY]} \
-                          | {self.clean_tx_data[i][TX_AMOUNT_KEY]}")
-
-                elif what_data == "sorted":
-                    print(f"{self.sorted_clean_data[i][TX_DATE_KEY]} | \
-                           {self.sorted_clean_data[i][TX_DATE_KEY].day} | \
-                           {self.sorted_clean_data[i][TX_MERCHANT_KEY]} | \
-                           {self.sorted_clean_data[i][TX_AMOUNT_KEY]} ")
-
-                elif what_data == "subscriptions":
-                    print(f"{self.subscriptions_data[i][TX_MERCHANT_KEY]} | \
-                          {self.subscriptions_data[i]["subs_day"]} | \
-                          {self.subscriptions_data[i][TX_AMOUNT_KEY]} | \
-                          {self.subscriptions_data[i]["subs_start_date"]} | \
-                          {self.subscriptions_data[i]["subs_end_date"]} | \
-                          {self.subscriptions_data[i]["subs_frequency"]} | \
-                          {self.subscriptions_data[i]["subs_merchant_sum"]} | \
-                          {self.subscriptions_data[i]["num_subs_tx"]} | \
-                          {str(self.subscriptions_data[i]["active"])}")
-
-        except Exception as e:
-            print(f"\nUnexpected  error occurred in \
-                  print_data({what_data}): \n")
-            # from https://docs.python.org/3/tutorial/errors.html:
-            print(type(e))    # the exception type
-            return False
 
     def get_analysis_time_frame(self, dataset):
         """
@@ -1453,7 +1435,6 @@ class TxData:
             print(type(e))  # the exception type
             return
 
-
 def main():
     """
     Run the main program
@@ -1495,25 +1476,16 @@ def main():
     print(f"\nRET succesfully connected to your Google Worksheet: \
           \n{RAW_DATA_WSHEET.title}.\n")
 
-    # import raw transaction data from the worksheet
-    selected_raw_tx_data = import_raw_data(RAW_DATA_WSHEET)
-
-    print("The raw transaction data has been successfully imported.\n")
-
-    # let's start the data analysis
-    # instantiate the class
-    tx_data = TxData(selected_raw_tx_data)
-
-    tx_data.print_data(10, "raw", True)
-    if input("\nDo you want to continue with the data? (y/n):\n") != "y":
-        print(f"\nOK, please check '{RAW_DATA_WSHEET.title}' and let's \
-              \ntry again")
-        # we need to delete the instance of the TxData class first
-        del tx_data
-        selected_raw_tx_data = import_raw_data(RAW_DATA_WSHEET)
-        # let's start the data analysis again
-        # instantiate the class again
+    selected_raw_tx_data = check_import_raw_data(RAW_DATA_WSHEET):
+    if len(selected_raw_tx_data) > 0:
+        # let's start the data analysis
+        # instantiate the class
         tx_data = TxData(selected_raw_tx_data)
+    else:
+        cprint("Transaction Data you provided could not be processed. \
+               \nGoood buy!", 'red')
+        return
+        
 
     clean_console()
 
