@@ -413,7 +413,7 @@ def import_raw_data(raw_data_wsheet):
     # and create a list of dfictionaries
     selected_tx_data = []
 
-    for i in range(int(start_row)-1, len(raw_tx_data)):
+    for i in range(int(start_row)-1, len(raw_tx_data)-1):
         # check if any cell is empty
         if raw_tx_data[i][tx_date_col].strip() == "" or \
            raw_tx_data[i][tx_merchant_col].strip() == "" or \
@@ -802,7 +802,50 @@ def print_data(number_of_rows, data, clean):
         print(type(e))    # the exception type
         return False
 
-def check_import_raw_data(sheet):
+def clean_up_tx_data(data):
+    """
+    clean up each value row by row coverting date and value as needed
+    Return: clean_tx_data
+    """
+    convert_error_count = 0
+    i = 0
+
+    num_rows = len(data)-1
+    for i in range(num_rows):
+        # clean up the date
+        date_str = data[i][TX_DATE_KEY]
+        clean_date = clean_date(date_str)
+        if not clean_date:
+            convert_error_count+= 1 
+
+        # clean up the amount
+        amount_str = data[i][TX_AMOUNT_KEY]
+        clean_amount = clean_amount(amount_str)
+        if not clean_amount:
+            convert_error_count+= 1 
+
+        # clean up the merchant
+        merchant_str = data[i][TX_MERCHANT_KEY]
+        clean_merchant = clean_merchant(merchant_str)
+        if not clean_merchant:
+            convert_error_count+= 1 
+
+        # let's check if we are within the error tolerance
+        if convert_error_count < num_rows * INPUT_DATA_ERROR_TOLERANCE:
+            new_row = {
+                ROW_KEY: i,
+                TX_DATE_KEY: clean_date,
+                TX_MERCHANT_KEY: clean_merchant,
+                TX_AMOUNT_KEY: clean_amount
+                }
+
+            self.clean_tx_data.append(new_row)
+        else:
+            print(f"Too many errors in the data. Please check \
+                    \nthe data and try again.")
+            return False
+
+def check_import_raw_data(sheet, tx_data):
     """
     Check the raw data for any errors and import
     """
@@ -821,10 +864,20 @@ def check_import_raw_data(sheet):
 
             data_ok = data_ok.strip().lower()
 
+            # let's check the date format of the input data
+            tx_data.check_date_format(selected_raw_tx_data)
+
+            # clean up the tx data row by row
+            print("Cleaning up the imported transaction data...")
+            if not tx_data.clean_up_tx_data(selected_raw_tx_data):
+                print("An error occurred while cleaning the transaction data.")
+                return False
+
             if data_ok != "y":
                 print(f"\nOK, please check '{sheet.title}' and let's \
                 \ntry again")
             else:
+                
                 print("The raw transaction data has been successfully imported.\n")
 
         return selected_raw_tx_data
@@ -833,8 +886,7 @@ def check_import_raw_data(sheet):
         print(f"\nUnexpected  error occurred in analyze_data: \n")
         # from https://docs.python.org/3/tutorial/errors.html:
         print(type(e))  # the exception type
-        return
-
+        return False
 
 
 #################################################################
@@ -855,14 +907,15 @@ class TxData:
     subscriptions_data = []
     recurring_merchants_data = []
 
-    def __init__(self, selected_raw_tx_data):
-        self.selected_raw_tx_data = selected_raw_tx_data
-
+    def __init__(self):
         self.sorted_clean_data = []
         self.clean_tx_data = []
 
-        # let's check the date format of the input data
-        self.check_date_format(self.selected_raw_tx_data)
+    def set_tx_dataset(self, selected_raw_tx_data):
+        """
+        Set the transaction dataset
+        """
+        self.selected_raw_tx_data = selected_raw_tx_data
 
     def check_date_format(self, data):
         """
@@ -884,29 +937,33 @@ class TxData:
                                  date_str)
 
                 if not match:
-                    raise ValueError()
+                    print(f"{date_str} is not in the right format.")
+                    return False
 
                 # Extract day, month, and year from the matched groups
                 # provided by ChatGPT
                 day, month, year = map(int, match.groups())
 
-                if month > 12:
+                if month > 12 and month <= 31:
                     # seems the date format is not day first but
                     # month first, so let's # set the class constant
                     # and exit
                     self.DATE_FORMAT_DAY_FIRST = False
                     print("\nSWITCHING DATE FORMAT TO MONTH FIRST\n")
-                    return
+                    return True
+
+                else:
+                    return False
 
             except ValueError:
                 print(f"{date_str} is not in the right format.")
-                return
+                return False
 
             except Exception as e:
                 print(f"\nUnexpected  error occurred: \n")
                 # from https://docs.python.org/3/tutorial/errors.html:
                 print(type(e))    # the exception type
-                return
+                return False
 
     def clean_date(self, date_str):
         """
@@ -919,7 +976,8 @@ class TxData:
         match = re.match(r'(\d{1,2})[./-](\d{1,2})[./-](\d{4})', date_str)
 
         if not match:
-            raise ValueError()
+            print(f"{date_str} is not in the right format.")
+            return False
 
         # Extract day, month, and year from the matched groups provided by
         # ChatGPT depending on the date format
@@ -1002,44 +1060,6 @@ class TxData:
             print(type(e))    # the exception type
             return False
 
-    def clean_up_tx_data(self):
-        """
-        clean up each value row by row coverting date and value as needed
-        Return: clean_tx_data
-        """
-        convert_error_count = 0
-        num_rows = len(self.selected_raw_tx_data)
-        for i in range(num_rows):
-            # clean up the date
-            date_str = self.selected_raw_tx_data[i][TX_DATE_KEY]
-            clean_date = self.clean_date(date_str)
-            convert_error_count += 1 if not clean_date else 0
-
-            # clean up the amount
-            amount_str = self.selected_raw_tx_data[i][TX_AMOUNT_KEY]
-            clean_amount = self.clean_amount(amount_str)
-            convert_error_count += 1 if not clean_amount else 0
-
-            # clean up the merchant
-            merchant_str = self.selected_raw_tx_data[i][TX_MERCHANT_KEY]
-            clean_merchant = self.clean_merchant(merchant_str)
-            convert_error_count += 1 if not clean_merchant else 0
-
-            # let's check if we are within the error tolerance
-            if convert_error_count < num_rows * INPUT_DATA_ERROR_TOLERANCE:
-                new_row = {
-                    ROW_KEY: i,
-                    TX_DATE_KEY: clean_date,
-                    TX_MERCHANT_KEY: clean_merchant,
-                    TX_AMOUNT_KEY: clean_amount
-                    }
-
-                self.clean_tx_data.append(new_row)
-            else:
-                print(f"Too many errors in the data. Please check \
-                      the data and try again.")
-                return False
-
     def sort_data(self, data, mode):
         """
         Sort the transaction data
@@ -1064,6 +1084,47 @@ class TxData:
                 )
 
         return sorted_data
+
+    def clean_up_tx_data(self, selected_raw_tx_data):
+        """
+        clean up each value row by row coverting date and value as needed
+        Return: clean_tx_data
+        """
+        convert_error_count = 0
+        num_rows = len(selected_raw_tx_data)
+        for i in range(num_rows):
+            # clean up the date
+            date_str = selected_raw_tx_data[i][TX_DATE_KEY]
+            clean_date = self.clean_date(date_str)
+            if not clean_date:
+                convert_error_count += 1
+
+            # clean up the amount
+            amount_str = selected_raw_tx_data[i][TX_AMOUNT_KEY]
+            clean_amount = self.clean_amount(amount_str)
+            if not clean_amount:
+                convert_error_count += 1
+
+            # clean up the merchant
+            merchant_str = selected_raw_tx_data[i][TX_MERCHANT_KEY]
+            clean_merchant = self.clean_merchant(merchant_str)
+            if not clean_merchant:
+                convert_error_count += 1
+           
+            # let's check if we are within the error tolerance
+            if convert_error_count < num_rows * INPUT_DATA_ERROR_TOLERANCE:
+                new_row = {
+                    ROW_KEY: i,
+                    TX_DATE_KEY: clean_date,
+                    TX_MERCHANT_KEY: clean_merchant,
+                    TX_AMOUNT_KEY: clean_amount
+                    }
+
+                self.clean_tx_data.append(new_row)
+            else:
+                print(f"Too many errors in the data. Please check \
+                      the data and try again.")
+                return False
 
     def get_analysis_time_frame(self, dataset):
         """
@@ -1477,22 +1538,21 @@ def main():
     RAW_DATA_WSHEET = get_imported_csv_wsheet(SHEET)
     print(f"\nRET succesfully connected to your Google Worksheet: \
           \n{RAW_DATA_WSHEET.title}.\n")
+    
+    # let's instantiate the class as we need it's methods now
+    tx_data = TxData()
 
-    selected_raw_tx_data = check_import_raw_data(RAW_DATA_WSHEET)
+    selected_raw_tx_data = check_import_raw_data(RAW_DATA_WSHEET, tx_data)
     if len(selected_raw_tx_data) > 0:
         # let's start the data analysis
-        # instantiate the class
-        tx_data = TxData(selected_raw_tx_data)
+        tx_data.set_tx_dataset(selected_raw_tx_data)
+
     else:
         cprint("Transaction Data you provided could not be processed. \
                \nGoood buy!", 'red')
         return
 
     clean_console()
-
-    # clean up the tx data row by row
-    print("Cleaning up the imported transaction data...")
-    tx_data.clean_up_tx_data()
 
     # sort the cleaned data
     print("Sorting the cleaned transaction data...")
