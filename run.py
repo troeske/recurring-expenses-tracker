@@ -802,53 +802,13 @@ def print_data(number_of_rows, data, clean):
         print(type(e))    # the exception type
         return False
 
-def clean_up_tx_data(data):
-    """
-    clean up each value row by row coverting date and value as needed
-    Return: clean_tx_data
-    """
-    convert_error_count = 0
-    i = 0
-
-    num_rows = len(data)-1
-    for i in range(num_rows):
-        # clean up the date
-        date_str = data[i][TX_DATE_KEY]
-        clean_date = clean_date(date_str)
-        if not clean_date:
-            convert_error_count+= 1 
-
-        # clean up the amount
-        amount_str = data[i][TX_AMOUNT_KEY]
-        clean_amount = clean_amount(amount_str)
-        if not clean_amount:
-            convert_error_count+= 1 
-
-        # clean up the merchant
-        merchant_str = data[i][TX_MERCHANT_KEY]
-        clean_merchant = clean_merchant(merchant_str)
-        if not clean_merchant:
-            convert_error_count+= 1 
-
-        # let's check if we are within the error tolerance
-        if convert_error_count < num_rows * INPUT_DATA_ERROR_TOLERANCE:
-            new_row = {
-                ROW_KEY: i,
-                TX_DATE_KEY: clean_date,
-                TX_MERCHANT_KEY: clean_merchant,
-                TX_AMOUNT_KEY: clean_amount
-                }
-
-            self.clean_tx_data.append(new_row)
-        else:
-            print(f"Too many errors in the data. Please check \
-                    \nthe data and try again.")
-            return False
-
 def check_import_raw_data(sheet, tx_data):
     """
     Check the raw data for any errors and import
     """
+    # setting the message to a default value
+    message = "An error occurred while cleaning the transaction data.\
+        \nDo you want to try again selecting the data from the worksheet?"
 
     try:
         selected_raw_tx_data = []
@@ -869,18 +829,15 @@ def check_import_raw_data(sheet, tx_data):
 
             # clean up the tx data row by row
             print("Cleaning up the imported transaction data...")
-            if not tx_data.clean_up_tx_data(selected_raw_tx_data):
-                print("An error occurred while cleaning the transaction data.")
-                return False
-
-            if data_ok != "y":
-                print(f"\nOK, please check '{sheet.title}' and let's \
-                \ntry again")
+            clean_data = tx_data.clean_up_tx_data(selected_raw_tx_data)
+            if not clean_data:
+                cprint(message, 'red')
+                data_ok = "n"
             else:
-                
                 print("The raw transaction data has been successfully imported.\n")
+                data_ok = "y"
 
-        return selected_raw_tx_data
+        return selected_raw_tx_data, clean_data
 
     except Exception as e:
         print(f"\nUnexpected  error occurred in analyze_data: \n")
@@ -910,12 +867,6 @@ class TxData:
     def __init__(self):
         self.sorted_clean_data = []
         self.clean_tx_data = []
-
-    def set_tx_dataset(self, selected_raw_tx_data):
-        """
-        Set the transaction dataset
-        """
-        self.selected_raw_tx_data = selected_raw_tx_data
 
     def check_date_format(self, data):
         """
@@ -1091,6 +1042,8 @@ class TxData:
         Return: clean_tx_data
         """
         convert_error_count = 0
+        clean_tx_data = []
+
         num_rows = len(selected_raw_tx_data)-1
         for i in range(num_rows):
             try:
@@ -1121,7 +1074,8 @@ class TxData:
                         TX_AMOUNT_KEY: clean_amount
                         }
 
-                    self.clean_tx_data.append(new_row)
+                    clean_tx_data.append(new_row)
+
                 else:
                     print(f"Too many errors in the data. Please check \
                         the data and try again.")
@@ -1133,7 +1087,7 @@ class TxData:
                 print(type(e))    # the exception type
                 return False
         
-        return True
+        return clean_tx_data
 
     def get_analysis_time_frame(self, dataset):
         """
@@ -1551,14 +1505,19 @@ def main():
     # let's instantiate the class as we need it's methods now
     tx_data = TxData()
 
-    selected_raw_tx_data = check_import_raw_data(RAW_DATA_WSHEET, tx_data)
+    selected_raw_tx_data = []
+    clean_data = []
+
+    (selected_raw_tx_data,
+     clean_data) = check_import_raw_data(RAW_DATA_WSHEET, tx_data)
     if not selected_raw_tx_data:
         cprint("Transaction Data you provided could not be processed. \
                \nGoood buy!", 'red')
         return
 
     # data os ok, so let's start the data analysis
-    tx_data.set_tx_dataset(selected_raw_tx_data)
+    tx_data.selected_raw_tx_data = selected_raw_tx_data
+    tx_data.clean_tx_data = clean_data
 
     clean_console()
 
