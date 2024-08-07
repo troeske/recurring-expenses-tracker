@@ -361,8 +361,6 @@ def import_raw_data(raw_data_wsheet):
     where the user imported his/her CSV file into a list of lists
     Return: the list of lists with the raw transaction data
     """
-    # let's start clean
-    selected_tx_data = []
 
     # let's start with the row where the transaction data starts
     input_message = "\nPlease enter the row number where the \
@@ -403,9 +401,9 @@ def import_raw_data(raw_data_wsheet):
     tx_amount_col -= 1
 
     print(f"\nRET is now importing your raw transaction data \
-          from the worksheet: {raw_data_wsheet.title}.")
+          \nfrom the worksheet: {raw_data_wsheet.title}.")
     print("This may take a few seconds depending on the \
-          size of the data.\n")
+          \nsize of the data.\n")
     print("Please wait...\n")
 
     raw_tx_data = raw_data_wsheet.get_all_values()
@@ -813,7 +811,7 @@ def check_import_raw_data(sheet):
         selected_raw_tx_data = []
         data_ok = "n"
 
-        while data_ok.strip().lower() != "y"
+        while data_ok != "y":
             # import raw transaction data from the worksheet
             selected_raw_tx_data = import_raw_data(sheet)
 
@@ -821,11 +819,15 @@ def check_import_raw_data(sheet):
             data_ok = input("\nDo you want to continue with the data? \
                     \n(y/n):\n")
 
-            print(f"\nOK, please check '{sheet.title}' and let's \
-                \ntry again")
+            data_ok = data_ok.strip().lower()
 
-        print("The raw transaction data has been successfully imported.\n")
-        return True
+            if data_ok != "y":
+                print(f"\nOK, please check '{sheet.title}' and let's \
+                \ntry again")
+            else:
+                print("The raw transaction data has been successfully imported.\n")
+
+        return selected_raw_tx_data
 
     except Exception as e:
         print(f"\nUnexpected  error occurred in analyze_data: \n")
@@ -1476,7 +1478,7 @@ def main():
     print(f"\nRET succesfully connected to your Google Worksheet: \
           \n{RAW_DATA_WSHEET.title}.\n")
 
-    selected_raw_tx_data = check_import_raw_data(RAW_DATA_WSHEET):
+    selected_raw_tx_data = check_import_raw_data(RAW_DATA_WSHEET)
     if len(selected_raw_tx_data) > 0:
         # let's start the data analysis
         # instantiate the class
@@ -1485,7 +1487,6 @@ def main():
         cprint("Transaction Data you provided could not be processed. \
                \nGoood buy!", 'red')
         return
-        
 
     clean_console()
 
