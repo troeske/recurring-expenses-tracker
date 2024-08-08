@@ -781,9 +781,9 @@ def print_data(number_of_rows, data, clean):
             number_of_rows = len(data)
 
         print(f"{'Row:':<5} | "
-            f"{'Date:':<11} | "
-            f"{'Merchant/Recepient:':<30} | "
-            f"{'Amount:':<10}\n")
+              f"{'Date:':<11} | "
+              f"{'Merchant/Recepient:':<30} | "
+              f"{'Amount:':<10}\n")
 
         for i in range(number_of_rows):
             r = data[i][ROW_KEY]
@@ -791,9 +791,9 @@ def print_data(number_of_rows, data, clean):
             m = data[i][TX_MERCHANT_KEY]
             a = data[i][TX_AMOUNT_KEY]
             print(f"{r:<5} | "
-                f"{d:<11} | "
-                f"{m:<30} | "
-                f"{a:<10}")
+                  f"{d:<11} | "
+                  f"{m:<30} | "
+                  f"{a:<10}")
 
     except Exception as e:
         print(f"\nUnexpected  error occurred in \
@@ -1558,5 +1558,6 @@ def main():
                                        tx_data.ANALYSIS_END_DATE):
         print("\nan error occurred while uploading the data to the \
               \nGoogle Sheet.")
+
 
 main()
