@@ -1057,12 +1057,21 @@ class TxData:
 
         num_rows = len(selected_raw_tx_data)-1
         for i in range(num_rows):
+            # let's check if we are within the error tolerance
+            if convert_error_count >= num_rows * INPUT_DATA_ERROR_TOLERANCE:
+                m = f"\nMore than {INPUT_DATA_ERROR_TOLERANCE*100}% errors in the data.\
+                        \nPlease check the data and try again.\n"
+                cprint(m, 'red')
+                return False
+
             try:
                 # clean up the date
                 date_str = selected_raw_tx_data[i][TX_DATE_KEY]
                 clean_date = self.clean_date(date_str)
                 if not clean_date:
                     convert_error_count += 1
+                    # cannot have wrong data in dates so let's
+                    # skip this row
                     continue
 
                 # clean up the amount
@@ -1070,6 +1079,8 @@ class TxData:
                 clean_amount = self.clean_amount(amount_str)
                 if not clean_amount:
                     convert_error_count += 1
+                    # cannot have wrong data in amount so let's
+                    # skip this row
                     continue
 
                 # clean up the merchant
@@ -1077,23 +1088,21 @@ class TxData:
                 clean_merchant = self.clean_merchant(merchant_str)
                 if not clean_merchant:
                     convert_error_count += 1
+                    # cannot have wrong data in Merchant so let's
+                    # skip this row
                     continue
 
-                # let's check if we are within the error tolerance
-                if convert_error_count < num_rows * INPUT_DATA_ERROR_TOLERANCE:
-                    new_row = {
-                        ROW_KEY: i,
-                        TX_DATE_KEY: clean_date,
-                        TX_MERCHANT_KEY: clean_merchant,
-                        TX_AMOUNT_KEY: clean_amount
-                        }
+                # if we end up here all data was cleaned correctly and 
+                # we can add it to the clean_tx_data list
+                new_row = {
+                    ROW_KEY: i,
+                    TX_DATE_KEY: clean_date,
+                    TX_MERCHANT_KEY: clean_merchant,
+                    TX_AMOUNT_KEY: clean_amount
+                    }
 
-                    clean_tx_data.append(new_row)
+                clean_tx_data.append(new_row)
 
-                else:
-                    print(f"Too many errors in the data. Please check \
-                        \nthe data and try again.")
-                    return False
 
             except Exception as e:
                 print(f"\nUnexpected error occurred in clean_up_tx_data: \n")
