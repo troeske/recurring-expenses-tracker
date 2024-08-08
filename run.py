@@ -25,7 +25,7 @@ ROW_KEY = "row"
 TX_DATE_KEY = "tx_date"
 TX_MERCHANT_KEY = "tx_merchant"
 TX_AMOUNT_KEY = "tx_amount"
-INPUT_DATA_ERROR_TOLERANCE = 0.1
+ERROR_TOLERANCE = 0.1
 # number of days the tx_date can vary due to weekends, bankholidays etc
 SUBS_DAY_FLEX = 4
 # in case the amount of the subscription various
@@ -761,6 +761,7 @@ def upload_sorted_to_worksheet(spreadsheet, worksheet_name,
         print(type(e))    # the exception type
         return False
 
+
 def print_data(number_of_rows, data, clean):
     """
     Print the provided number_of_rows of the data requested
@@ -780,10 +781,9 @@ def print_data(number_of_rows, data, clean):
             number_of_rows = len(data)
 
         print(f"{'Row:':<5} | "
-                f"{'Date:':<11} | "
-                f"{'Merchant/Recepient:':<30} | "
-                f"{'Amount:':<10}\n")
-
+            f"{'Date:':<11} | "
+            f"{'Merchant/Recepient:':<30} | "
+            f"{'Amount:':<10}\n")
 
         for i in range(number_of_rows):
             r = data[i][ROW_KEY]
@@ -791,9 +791,9 @@ def print_data(number_of_rows, data, clean):
             m = data[i][TX_MERCHANT_KEY]
             a = data[i][TX_AMOUNT_KEY]
             print(f"{r:<5} | "
-                    f"{d:<11} | "
-                    f"{m:<30} | "
-                    f"{a:<10}")
+                f"{d:<11} | "
+                f"{m:<30} | "
+                f"{a:<10}")
 
     except Exception as e:
         print(f"\nUnexpected  error occurred in \
@@ -801,6 +801,7 @@ def print_data(number_of_rows, data, clean):
         # from https://docs.python.org/3/tutorial/errors.html:
         print(type(e))    # the exception type
         return False
+
 
 def check_import_raw_data(sheet, tx_data):
     """
@@ -1058,8 +1059,8 @@ class TxData:
         num_rows = len(selected_raw_tx_data)-1
         for i in range(num_rows):
             # let's check if we are within the error tolerance
-            if convert_error_count >= num_rows * INPUT_DATA_ERROR_TOLERANCE:
-                m = f"\nMore than {INPUT_DATA_ERROR_TOLERANCE*100}% errors in the data.\
+            if convert_error_count >= num_rows * ERROR_TOLERANCE:
+                m = f"\nMore than {ERROR_TOLERANCE*100}% errors in the data.\
                         \nPlease check the data and try again.\n"
                 cprint(m, 'red')
                 return False
@@ -1092,7 +1093,7 @@ class TxData:
                     # skip this row
                     continue
 
-                # if we end up here all data was cleaned correctly and 
+                # if we end up here all data was cleaned correctly and
                 # we can add it to the clean_tx_data list
                 new_row = {
                     ROW_KEY: i,
@@ -1103,13 +1104,12 @@ class TxData:
 
                 clean_tx_data.append(new_row)
 
-
             except Exception as e:
                 print(f"\nUnexpected error occurred in clean_up_tx_data: \n")
                 # from https://docs.python.org/3/tutorial/errors.html:
                 print(type(e))    # the exception type
                 return False
-        
+
         return clean_tx_data
 
     def get_analysis_time_frame(self, dataset):
@@ -1484,6 +1484,7 @@ class TxData:
             print(type(e))  # the exception type
             return
 
+
 def main():
     """
     Run the main program
@@ -1524,7 +1525,7 @@ def main():
     RAW_DATA_WSHEET = get_imported_csv_wsheet(SHEET)
     print(f"\nRET succesfully connected to your Google Worksheet: \
           \n{RAW_DATA_WSHEET.title}.\n")
-    
+
     # let's instantiate the class as we need it's methods now
     tx_data = TxData()
 
@@ -1557,6 +1558,5 @@ def main():
                                        tx_data.ANALYSIS_END_DATE):
         print("\nan error occurred while uploading the data to the \
               \nGoogle Sheet.")
-
 
 main()
