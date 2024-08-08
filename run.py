@@ -899,7 +899,7 @@ class TxData:
                                  date_str)
 
                 if not match:
-                    print(f"{date_str} is not in the right format.")
+                    print(f"'{date_str}' is not allowed as date.")
                     return False
 
                 # Extract day, month, and year from the matched groups
@@ -918,7 +918,7 @@ class TxData:
                     return False
 
             except ValueError:
-                print(f"{date_str} is not in the right format.")
+                print(f"'{date_str}' is not allowed as date.")
                 return False
 
             except Exception as e:
@@ -938,7 +938,7 @@ class TxData:
         match = re.match(r'(\d{1,2})[./-](\d{1,2})[./-](\d{4})', date_str)
 
         if not match:
-            print(f"{date_str} is not in the right format.")
+            print(f"'{date_str}' is not allowed as date.")
             return False
 
         # Extract day, month, and year from the matched groups provided by
@@ -953,7 +953,7 @@ class TxData:
             return clean_date
 
         except ValueError:
-            print(f"{date_str} is not in the right format.")
+            print(f"'{date_str}' is not allowed as date.")
             return False
 
     def clean_amount(self, amount_str):
@@ -990,7 +990,7 @@ class TxData:
             return clean_amount
 
         except ValueError:
-            print(f"{amount_str} is not in the right format.")
+            print(f"'{amount_str}' is not allowed as amount.")
             return False
 
         except Exception as e:
@@ -1013,7 +1013,7 @@ class TxData:
             return clean_merchant
 
         except ValueError:
-            print(f"{merchant_str} is not in the right format.")
+            print(f"'{merchant_str}' is not allowed as Merchant.")
             return False
 
         except Exception as e:
@@ -1063,19 +1063,22 @@ class TxData:
                 clean_date = self.clean_date(date_str)
                 if not clean_date:
                     convert_error_count += 1
+                    continue
 
                 # clean up the amount
                 amount_str = selected_raw_tx_data[i][TX_AMOUNT_KEY]
                 clean_amount = self.clean_amount(amount_str)
                 if not clean_amount:
                     convert_error_count += 1
+                    continue
 
                 # clean up the merchant
                 merchant_str = selected_raw_tx_data[i][TX_MERCHANT_KEY]
                 clean_merchant = self.clean_merchant(merchant_str)
                 if not clean_merchant:
                     convert_error_count += 1
-            
+                    continue
+
                 # let's check if we are within the error tolerance
                 if convert_error_count < num_rows * INPUT_DATA_ERROR_TOLERANCE:
                     new_row = {
@@ -1089,7 +1092,7 @@ class TxData:
 
                 else:
                     print(f"Too many errors in the data. Please check \
-                        the data and try again.")
+                        \nthe data and try again.")
                     return False
 
             except Exception as e:
