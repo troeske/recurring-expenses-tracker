@@ -1,39 +1,45 @@
-# LOVE-TO-EARN
-This is the website for vocabulary learning: LOVE-To-LEARN (L2L): [LOVE-TO-LEARN](https://troeske.github.io/love-to-learn/). 
+# RECURRING EXPENSE TRACKER
+This is an app to identify recurring expenses in your credit cards or accounts: Recurring Expense Tracker (RET): [Recurring Expense Tracker](https://reccuring-expense-tracker-3678684f8583.herokuapp.com/). 
 <br>
 <img src="media/L2L_landing_page_book_loaded.png"  width="300" height="auto" alt="Love-To-Learn Landing Page">
 
-I was inspired to implement this site after helping one of my daughters to learn English vocabulary focused on certain topics (in her case crime & punishment and UK disparities) for her high school exam 3 weeks ago. Though she has successfully passed her exam already before I started the web app, it served as my inspiration and decisions on MVP functionality. With this past but real use case in mind I got carried away with MVP functionality and it turned into an NVP: Nice Viable Product with quite some complexity and advanced functionality. 
+I was inspired to implement this app as it got very cumbersome to sort through all credit card statements and accounts to find all recurring expenses / subscriptions. I also did not want to give external services direct access to my accounts. This app works on imported CSV files with the respective transaction data. To make it easy for the user to maintain the list of subsrcriptions and recurring purchases and merchants RET uses Google Sheets.
+
+The us can let RET create a spreadsheet and share it with the user or the user can create his/her own sheet and share it with RET.
+
+RET performs data conversion if necessary in regards to date format and amount format. If more then 10% error occur, RET will notify the user and ask the user to select the dataset again.
+
+The result of the analysis will be provided in a new worksheet with the default name "ANALYSIS RESULTS". If that sheet already exist the user can select a new name. 
 
 ## User Experience
 
 ### Target Audience:
-    anybody who is looking for a simple vocabulary learning app that allows manual entering and saving of vocabulary cards as well as opening existing exercise books. 
+    anybody who wants to analysis his expenes for recurring purchases and subscriptions. 
 
 ### User Stories:
-    (1) 
-    (2) 
-    (3) 
-    (4) 
-    (5)
-    (6) 
-    (7) 
-    (8) 
+    (1) as a user I want to import my transaction data from a csv file
+    (2) as user I want to have RET create a blank new spreadsheet 
+    (3) as a user I want to use my existing spreadsheet
+    (4) as a user I want to tell RET where my relevant transaction data starts
+    (5) as a user I want to tell RET in what columns my transaction date, merchant and amount is
+    (6) as a user I want to see a list of all subscriptions incl. their monthly, quarterly amounts
+    (7) as a user I want to see my overall spend for a given subscription
+    (8) as a user I want to see a list of recurring merchant and how often I shopped there and how much I spend
+    (9) as a user I want to be able to select a different dataset if there were to many errors or I made a mistake in selectin wrong columns etc.
     
 ### Future Use-Cases
-    (9) help with pronouncing the words correctly
-    (10) saving learning progress beyond the current session
-    (11) voice to text entering
-    (12) more complex learning cards for flexible content (pictures, lists etc.) to facilitate learning any kind of content
-    (13) ask user to save when leaving the page 
+    (9) asking the user to add data from another source before starting the analysis
+    (10) more output data (e.g. list of individual purchases at recurring merchants)
+    (11) collect agregated subscription info from all user (in line with GDPR) to provide insights to other users on avergae paid subscriptions etc.
+  
 
 ## Design
 ### Site Structure
-The site implements a simple structure with one landing page 
+The site uses the CI terminal emulator for python CL applications 
 
 ### Program Flow
 
-<img src="media/L2L_landing_page_I.png"  width="300" height="auto" alt="Landing Page Card Front - index.html">
+<img src="media/start_menu.png"  width="300" height="auto" alt="Landing Page Card Front - index.html">
 <img src="media/L2L_landing_page_II.png"  width="300" height="auto" alt="Landing Page Card Front - index.html">
 
 
@@ -153,40 +159,60 @@ The user can delete a card in the current Exercise Book by clicking on the trash
 ## Manual Testing
 
 __Various Browsers on desktop devices:__
-
+| Nr | Feature              | Action                                                                                     | Expected Behaviour                                                                                                                                                                   | desktop- chrome | desktop- firefox |
+| -- | -------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------- | ---------------- |
+| 1  | new spreadsheet      | enter something that is not an email address                                               | check if value entered is an email                                                                                                                                                   | ok              | ok               |
+| 2  | new spreadsheet      | enter valid email                                                                          | RET informs you that a spreadsheet has been created and shares the URL for it                                                                                                        | ok              | ok               |
+| 3  | new spreadsheet      | check if en email from Google with the shared spreadsheet has arrived                      | email with link to shared spreadsheet has arrived                                                                                                                                    | ok              | ok               |
+| 4  | new spreadsheet      | copy/past link to browser window                                                           | shared spreadsheet opens                                                                                                                                                             | ok              | ok               |
+| 5  | new spreadsheet      | enter n when asked if you opened the spreadsheet                                           | RET should repeat the question                                                                                                                                                       | ok              | ok               |
+| 6  | import data          | enter n when asked if you imported csv data                                                | RET should repeat the question                                                                                                                                                       | ok              | ok               |
+| 7  | import data          | enter wrong sheet name when asked for the sheet name of the csv import                     | RET return an error and ask for the correct name again                                                                                                                               | ok              | ok               |
+| 8  | import data          | enter correct sheet name                                                                   | RET will start the data import with a series of questions                                                                                                                            | ok              | ok               |
+| 9  | import data          | enter non numerical value for starting row                                                 | RET will return an error and ask for a numerical value                                                                                                                               | ok              | ok               |
+| 10 | import data          | enter a non letter (e.g. numerical) value for date column                                  | RET will return an error and ask for a letter value                                                                                                                                  | ok              | ok               |
+| 11 | import data          | enter a non letter (e.g. numerical) value for merchantg column                             | RET will return an error and ask for a letter value                                                                                                                                  | ok              | ok               |
+| 12 | import data          | enter a non letter (e.g. numerical) value for amount column                                | RET will return an error and ask for a letter value                                                                                                                                  | ok              | ok               |
+| 13 | import data          | when presented with the sample data is ok, enter 'n'                                       | RET will ask you to start entering the start row and data columns questions again                                                                                                    | ok              | ok               |
+| 14 | import data          | when presented with the sample data is ok, enter 'y' even though the data is clearly wrong | RET returns an error that the data contains to much errors and terminates the program                                                                                                | ok              | ok               |
+| 15 | import data          | using data that has more than 10% errors in the date or amount column                      | RET will inform the unser that to many errors where found and ask if he/she wants to try again                                                                                       | ok              | ok               |
+| 16 | upload results       | when ask for a new name for the analysis results enter an existing name                    | when RET detects that a worksheet with the default name 'ANALYSIS RESULT' or the name you enterd already exists it will ask you to enter a new name until you provided a unique name | ok              | ok               |
+| 17 | existing spreadsheet | enter wrong URL                                                                            | RET will inform you that it couldn't find the spreadsheet and asks to copy the URL for the spreadsheet                                                                               | ok              | ok               |
+| 18 | existing spreadsheet | enter the URL to an existing Google spreadsheet that has not been shared with RET          | RET will inform you that it has no access rights to the sheet and asks you to copy the RET user name and share the spreadsheet with that user                                        | ok              | ok               |
+| 19 | existing spreadsheet | after sharing copy the URL again                                                           | RET will inform you that it could establish access to the spreadsheet and ask for the worksheet name where the CSV data is located                                                   | ok              | ok               |
 
 ### Open/Known Issues
 __Merge manual Cards when loading new Exercise Book:__
 
-    (1) 
-    (2) 
-
+    (1) Line break when user is asked for date, merchant and amount columns
 
 
 ## Code Validation
-### W3 HTML Validator https://validator.w3.org/nu/#textarea
+### lighthouse
 __Results:__
-All html pages were checked by the w3 html validator, and no errors remain.
+Lighouse test results.
 <br>
-<img src="media/L2L_HTML_validator_results.png"  width="300" height="auto" alt="W3 HTML Validator Results">
+<img src="media/lighthouse_test.png"  width="300" height="auto" alt="W3 HTML Validator Results">
 <br>
 
-### CSS Validator https://jigsaw.w3.org/css-validator/validator
-__Results:__
-All CSS files were checked by the w3c CSS validator and no errors remain. Remaining warnings are due to the use of CSS variables.
+#### CI Python Linter
+CI Python Linter test results:
 <br>
-<img src="media/L2L_CSS validator_results.png"  width="300" height="auto" alt="W3 CSS Validator Results">
+<img src="media/ci_python_linter_results.png"  width="300" height="auto" alt="W3 HTML Validator Results">
 <br>
 
 ## Deployment
 This section should describe the process you went through to deploy the project to a hosting platform (e.g. GitHub) 
 
-The site was deployed to GitHub pages. The steps to deploy are as follows: 
-  - In the GitHub repository, navigate to the Settings tab 
-  - From the source section drop-down menu, select the Master Branch
-  - Once the master branch has been selected, the page will be automatically refreshed with a detailed ribbon display to indicate the successful deployment. 
+The app is deployed via Heroku.
+When you create the app, you will need to add two buildpacks from the _Settings_ tab. The ordering is as follows:
 
-The live link can be found here: https://troeske.github.io/love-to-learn/  
+1. `heroku/python`
+2. `heroku/nodejs`
+
+To set the credentials for Google Services create another _Config Var_ called `CREDS` and paste the JSON into the value field.
+
+The live link can be found here: https://reccuring-expense-tracker-3678684f8583.herokuapp.com/
 
 ## Credits
 ### Tutorials
