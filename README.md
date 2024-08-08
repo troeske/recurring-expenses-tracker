@@ -1,20 +1,22 @@
 # RECURRING EXPENSE TRACKER
 This is an app to identify recurring expenses in your credit cards or accounts: Recurring Expense Tracker (RET): [Recurring Expense Tracker](https://reccuring-expense-tracker-3678684f8583.herokuapp.com/). 
 <br>
-<img src="media/L2L_landing_page_book_loaded.png"  width="300" height="auto" alt="Love-To-Learn Landing Page">
+<img src="media/start_menu.png"  width="300" height="auto" alt="Recurring Expense Tracker">
 
-I was inspired to implement this app as it got very cumbersome to sort through all credit card statements and accounts to find all recurring expenses / subscriptions. I also did not want to give external services direct access to my accounts. This app works on imported CSV files with the respective transaction data. To make it easy for the user to maintain the list of subsrcriptions and recurring purchases and merchants RET uses Google Sheets.
+I was inspired to implement this app as it got very cumbersome to sort through all credit card statements and accounts to find all recurring expenses / subscriptions in the attempt to better manage my finances and find areas to save money. I also did not want to give external services direct access to my accounts. 
 
-The us can let RET create a spreadsheet and share it with the user or the user can create his/her own sheet and share it with RET.
+This app works on imported CSV files with the respective transaction data. To make it easy for the user to maintain the list of subsrcriptions and recurring purchases and merchants RET uses Google Sheets.
 
-RET performs data conversion if necessary in regards to date format and amount format. If more then 10% error occur, RET will notify the user and ask the user to select the dataset again.
+To make RET flexible, it supports creating a new spreadsheet and share it with the user as well as allowing the user to create his/her own sheet and share it with RET.
+
+To provide some level of error resistance, RET performs data conversion if necessary in regards to date format and amount format. If more then 10% error occur, RET will notify the user and ask the user to select the dataset again.
 
 The result of the analysis will be provided in a new worksheet with the default name "ANALYSIS RESULTS". If that sheet already exist the user can select a new name. 
 
 ## User Experience
 
 ### Target Audience:
-    anybody who wants to analysis his expenes for recurring purchases and subscriptions. 
+    anybody who wants to analyze his expenes for recurring purchases and subscriptions. 
 
 ### User Stories:
     (1) as a user I want to import my transaction data from a csv file
@@ -35,125 +37,74 @@ The result of the analysis will be provided in a new worksheet with the default 
 
 ## Design
 ### Site Structure
-The site uses the CI terminal emulator for python CL applications 
+The site uses the Code Institute terminal emulator for python CL applications 
 
 ### Program Flow
 
-<img src="media/start_menu.png"  width="300" height="auto" alt="Landing Page Card Front - index.html">
-<img src="media/L2L_landing_page_II.png"  width="300" height="auto" alt="Landing Page Card Front - index.html">
+- __Main Menue__
+
+<img src="media/start_menu.png"  width="300" height="auto" alt="RET intro and menue page">
+
+
+- __Create new Spreadsheet__
+
+<img src="media/enter_email.png"  width="300" height="auto" alt="enter email page">
+
+
+<img src="media/create_spreadsheet.png"  width="300" height="auto" alt="create new spreadsheet and share link">
+
+
+- __Use an existing spreadsheet__
+
+<img src="media/use_right_mouse_click.png"  width="300" height="auto" alt="use right mouse click to paste sheet url">
+
+<img src="media/re-copy_url_after_sharing.png"  width="300" height="auto" alt="copy URL after sharing">
+
+<img src="media/copy_ret_service_user_right_mouse.png"  width="300" height="auto" alt="copy RET service account name for sharing">
+
+<img src="media/share_screen_google_sheets.png"  width="300" height="auto" alt="how to share a spreadsheet in Google Sheets">
+
+
+- __Upload transaction data__
+
+<img src="media/cvs_uploaded.png"  width="300" height="auto" alt="CVS upload">
+
+<img src="media/connect_to_sheet-enter_start_row.png"  width="300" height="auto" alt="enter starting row for data">
+
+<img src="media/tx_data_row.png"  width="300" height="auto" alt="Enter start data row">
+
+<img src="media/tx_date_col_fixed.png"  width="300" height="auto" alt="enter date column">
+
+<img src="media/merch_col.png"  width="300" height="auto" alt="enter merchant name column">
+
+<img src="media/amount_row.png"  width="300" height="auto" alt="enter amount coloumn">
+
+<img src="media/example_raw_dataset.png"  width="300" height="auto" alt="show how the imported data would look like">
+
+
+- __Error handling - transaction data upload__
+
+
+<img src="media/to_many_errors_abort.png"  width="300" height="auto" alt="to many errors message">
+
+<img src="media/to_many_errors.png"  width="300" height="auto" alt="to many errors abort message">
+
+
+- __Providing analysis results__
+
+<img src="media/reults_sheet_name.png"  width="300" height="auto" alt="name of the analysis result spreadsheet">
+
+<img src="media/results_sheet.png"  width="300" height="auto" alt="example of an analysis result spreadsheet">
+
+<img src="media/finished_message.png"  width="300" height="auto" alt="analysis completed message">
+
+- __Error handling - providing analysis results__
+
+<img src="media/error_handling_sheet_exists.png"  width="300" height="auto" alt="Landing Page Card Front - index.html">
 
 
 ### Color Scheme
 Black and white with highlight colors in terminal window.
-        
-## Current Features:
-
-### Landing Page
-The landing page is the core of the Love-To-Learn Site. It shows everything the user needs to get started with the learning experience.
-<br>
-<img src="media/L2L_landing_page_book_loaded.png"  width="300" height="auto" alt="Love-To-Learn Landing Page">
-
-
-- __Username__
-To make the experience personal L2L asks the users for their Name or Alias. 
-<br>
-<br>
-<img src="media/L2L_username_scrn.png"  width="300" height="auto" alt="Username entry">
-
-If the user decides not to fill in any data, L2L selects a default:
-<br>
-<img src="media/L2L_username_Incognito.png"  width="300" height="auto" alt="Hello Mr./Ms. Incognito">
-
-- __Exercise Book Details__
-This area shows the Name of the Exercise Book, the current topic within the Exercise Book and the languages to be learned.
-<br>
-<img src="media/L2L_book_topic_section.png"  width="300" height="auto" alt="Exercise Book Details">
-
-### Word Card
-- __Results Area__
-The results of the current learning session is presented below the Word Card:
-<br>
-<img src="media/L2L_results_area.png"  width="300" height="auto" alt="Results Area">
-
-### Navigation Bar
-The Navigation Bar provides buttons to manage Exercise Books and acces to the Help/Info function.
-<br>
-<img src="media/L2L_nav_bar.png"  width="300" height="auto" alt="Navigation Bar">
-
-- __Info Button__
-The Info Button displays info on each of the buttons of the L2L Site. <img src="media/L2L_Info-Button.png"  width="30" height="auto" alt="Info Button"> One click on the Info Button will show the Info/Help text for each of the main site elements. When pressed again the info will disappear again. 
-
-<br>
-<img src="media/L2L_info_button_card_front.png"  width="300" height="auto" alt="Site Info - Card Front">
-<img src="media/L2L_info_button_card_back.png"  width="300" height="auto" alt="media/L2L_info_button_card_back.png">
-
-- __Save Exercise Book__
-<br>
-<img src="media/L2L_Save-Button.png"  width="30" height="auto" alt="Load Exercise Book">
-<br>
-At any time, the user can save the current Exercise Book. The browser treats this as a file download and on mobile it is typically saved to the DOWNLOADS directory by default.
-(on mobiles it typically is saved to the DOWNLOADS directory by default)
-<br>
-<img src="media/L2L_save_Book.png"  width="300" height="auto" alt="Load Exercise Book">
-
-
-- __Download Template__
-<br>
-<img src="media/L2L_Template-Button.png"  width="30" height="auto" alt="Download Template">
-<br>
-
-To make it easy to build your own Exercise Book, L2L provides a template download function. Save the file at a destination of your choice (on mobiles it typically is saved to the DOWNLOADS directory by default). The user can open the file in a text editor or spreadsheet program to manually enter word pairs.
-The Load Exercise Book function allows the loading of the downloaded template into L2L and the user can use the L2L __Add Card__ function to add words as desired.
-
-- __Load Exercise Book__
-<br>
-<img src="media/L2L_Load-Book-Button.png"  width="30" height="auto" alt="Load Exercise Book">
-
-Users can load their existing (or previously saved) Exercise Books into L2L to start learning right away.
-
-### Learning Mode
-The core of L2L is to help user learn vocabulary. After loading an existing Exercise Book or manually entering a desired vocabulary the users can get start to learn and test their knowledge and progress.
-
-- __Navigating the Exercise Book__
-<br>
-<img src="media/L2L_Card_Front_non-empty.png"  width="300" height="auto" alt="Card Front">
-<br>
-
-The top of the front of the Word Card has buttons to step forward (Next Button) or backward (Previous Button) in the current Exercise Book and shows the current position in the Exercise Book. The Front also shows the original word to be learned.
-
-- __Learning and testing your knowledge__
-To learn the card, the user clicks on the flip card button and can press on the magnifying glass to display the translation of the original word.
-<br>
-<img src="media/L2L_backside_enter_translation_empty.png"  width="300" height="auto" alt="Card Back">
-<br>
-
-- __Verifying your Result - correct__
-Once the user has mastered the word, they can either type in the translation in to the input field and press ENTER (or the Enter button). If the translation was correct, the card will turn green and the 'got it' counter increases. 
-
-<img src="media/L2L_translation_correct.png"  width="300" height="auto" alt="Correct Translation">
-
-- __Verifying your Result - incorrect__
-If the translation was wrong the card turns red and the 'to improve' counter increases.
-
-<img src="media/L2L_translation_wrong.png"  width="300" height="auto" alt="Wrong Translation">
-
-
-The user can also keep the translation in mind and just click on the magnifying glass to see if they were right. If they were correct, they can press the correct button below the input field. The card will turn green and the 'got it' counter increases. If they were wrong they can press the x-button below the input field and the card turns red and the 'to improve' counter increases.
-
-The user can also flip back to the front and look at the original word again.
-
-### Add a Word Card
-<br>
-<img src="media/L2L_add_card_front.png"  width="300" height="auto" alt="Add Card Front">
-<br>
-
-The user can manually add words to the current Exercise Book or start a new Exercise Book from scratch. To add words, the users clicks on the + Button on the front of the word card. When hitting Enter or clicking on flip-card, the card will turn to the backside and the user can enter the translation. L2L will save the card once the user hits Enter, clicks the Enter-Button or the Correct-Button below the input field for the translated word. Automatically the card will flip to the front to get back into learning mode.
-
-### Delete current Word Card
-The user can delete a card in the current Exercise Book by clicking on the trash button below the original word on the front of the card. A confirm/Cancel message will pop up and the card will be deleted.
-<br>
-<img src="media/L2L_delete_card_message.png"  width="300" height="auto" alt="Delete Card">
-<br>
 
 
 ## Manual Testing
@@ -181,8 +132,9 @@ __Various Browsers on desktop devices:__
 | 18 | existing spreadsheet | enter the URL to an existing Google spreadsheet that has not been shared with RET          | RET will inform you that it has no access rights to the sheet and asks you to copy the RET user name and share the spreadsheet with that user                                        | ok              | ok               |
 | 19 | existing spreadsheet | after sharing copy the URL again                                                           | RET will inform you that it could establish access to the spreadsheet and ask for the worksheet name where the CSV data is located                                                   | ok              | ok               |
 
+
+
 ### Open/Known Issues
-__Merge manual Cards when loading new Exercise Book:__
 
     (1) Line break when user is asked for date, merchant and amount columns
 
@@ -219,51 +171,29 @@ The live link can be found here: https://reccuring-expense-tracker-3678684f8583.
 no tutorials were used.
 
 ### Code
-W3Schools: https://www.w3schools.com/
-MDN Web Docs: https://developer.mozilla.org/en-US/
-GeeksForGeeks: https://www.geeksforgeeks.org/
-               https://www.geeksforgeeks.org/python-validate-string-date-format/
-               https://www.geeksforgeeks.org/python-output-formatting/
-python.org: https://docs.python.org/3/tutorial/errors.html:
-Sololearn: https://www.sololearn.com/en/Discuss/3220821/how-how-to-delete-printed-text
-pyt5on.org: https://docs.python.org/3/tutorial/datastructures.html
-askpython: https://www.askpython.com/python/examples/find-number-of-days-in-month
-finxter: https://blog.finxter.com/5-effective-ways-to-check-if-a-string-can-be-converted-to-a-datetime-in-python/
-GSPREAD Docs: https://docs.gspread.org/en/latest/user-guide.html#creating-a-worksheet
-Pypi: https://pypi.org/project/gspread-formatting/
+W3Schools:      https://www.w3schools.com/
+MDN Web Docs:   https://developer.mozilla.org/en-US/
+GeeksForGeeks:  https://www.geeksforgeeks.org/
+                https://www.geeksforgeeks.org/python-validate-string-date-format/
+                https://www.geeksforgeeks.org/python-output-formatting/
+python.org:     https://docs.python.org/3/tutorial/errors.html:
+Sololearn:      https://www.sololearn.com/en/Discuss/3220821/how-how-to-delete-printed-text
+pyt5on.org:     https://docs.python.org/3/tutorial/datastructures.html
+askpython:      https://www.askpython.com/python/examples/find-number-of-days-in-month
+finxter:        https://blog.finxter.com/5-effective-ways-to-check-if-a-string-can-be-converted-to-a-datetime-in-python/
+GSPREAD Docs:   https://docs.gspread.org/en/latest/user-guide.html#creating-a-worksheet
+Pypi:           https://pypi.org/project/gspread-formatting/
 
 
-Github Copilot provided the core of following functions:
+Github Copilot or ChatGPT provided the core or parts of following functions/methods:
 
-    (1)  the upload/import of an existing .CSV file (incl. handleFileSelect(), csvToArray() )
-    (2)  the 3D flip card design and animation (incl. respective code in DOMContentLoaded EventListner)
-    (3)  drawDividerBack(), drawDividerFront()
-    (4)  the convert array to CSV conversion: convertArrayToCSV()
-    (5)  basic structure of editH2Content() (especially the ***.childNodes[0].nodeValue solution)
-    (6)  the basic structure idea of a modal dialog of the greetUser() function 
+    (1)  validate_email(email)
+    (2)  format_row_in_worksheet(worksheet, row, type)
+    (3)  check_date_format(self, data)
+    (4)  clean_date(self, date_str)
+    (5)  clean_amount(self, amount_str)
+    (6)  format_row_in_worksheet(worksheet, row, type) 
 
 I used https://tabletomarkdown.com/convert-spreadsheet-to-markdown/ to convert my Google Sheets manual testing matrix into a to table for this readme.
 
-### Graphics
-icons: https://fontawesome.com/
-favicon: https://www.freepik.com/icon
 
-### Photos
-
-### Any other resources
-https://validator.w3.org/nu/#textarea
-https://jigsaw.w3.org/css-validator/validator
-
-
-## Creating the Heroku app
-
-When you create the app, you will need to add two buildpacks from the _Settings_ tab. The ordering is as follows:
-
-1. `heroku/python`
-2. `heroku/nodejs`
-
-You must then create a _Config Var_ called `PORT`. Set this to `8000`
-
-If you have credentials, such as in the Love Sandwiches project, you must create another _Config Var_ called `CREDS` and paste the JSON into the value field.
-
-Connect your GitHub repository and deploy as normal.
