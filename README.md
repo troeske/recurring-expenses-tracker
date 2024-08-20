@@ -40,6 +40,35 @@ The result of the analysis will be provided in a new worksheet with the default 
 The site uses the Code Institute terminal emulator for python CL applications 
 
 ### Program Flow
+- __Main Program Flow__
+
+The following flow chart depicts the main flow of the program as invisioned in the design phase of the project. The actual flow of the program was changed where necessary during the implementation phase.
+
+<img src="media/RET_main_flow.png"  width="100%" height="auto" alt="RET Main Programm Flow">
+
+ 
+
+- __Helper Functions__
+
+get_tx_data(): function to import csv data from Google Spreadsheet/Worksheet into a list of objects.
+
+<img src="media/RET_helper_function-get_tx_data.png"  width="70%" height="auto" alt="RET Helper Function flow: get_tx_data">
+
+clean_merchant(): cleaning up the merchant name.
+
+<img src="media/RET_helper_function-clean_merchant.png"  width="70%" height="auto" alt="RET Helper Function flow: clean_merchant">
+
+clean_date(): cleaning up the date and determine if the date notation used is US (mm.dd.yyyy) or European (dd.mm.yyyy) format. Originally I invisioned to use parser.parse from dateutils as this was supposed to throw an error when forced to parse a date with dd first. However, the function just converted anything it got wihtout complaint even dates it wasn't supposed to convert. So in the implementation phase I asked chatGPT for help and used it's feedback to implement the clean_date function.
+
+<img src="media/RET_helper_function-clean_date.png"  width="70%" height="auto" alt="RET Helper Function flow: clean_merchant">
+
+- __Analyze Data Function__
+
+analyze_data(): a method of the tx_data class to analyze a cleaned and sorted dataset for recurring and subscription payments. This function was also adopted as needed in the implementation phase.
+
+<img src="media/RET_main_function-analyze_data.png"  width="100%" height="auto" alt="RET Helper Function flow: clean_merchant">
+
+
 
 - __Main Menue__
 
@@ -68,17 +97,23 @@ The site uses the Code Institute terminal emulator for python CL applications
 - __Upload transaction data__
 
 <img src="media/cvs_uploaded.png"  width="300" height="auto" alt="CVS upload">
+ 
 
 <img src="media/connect_to_sheet-enter_start_row.png"  width="300" height="auto" alt="enter starting row for data">
+ 
 
 <img src="media/tx_data_row.png"  width="300" height="auto" alt="Enter start data row">
+ 
 
 <img src="media/tx_date_col_fixed.png"  width="300" height="auto" alt="enter date column">
 
+ 
 <img src="media/merch_col.png"  width="300" height="auto" alt="enter merchant name column">
 
+ 
 <img src="media/amount_row.png"  width="300" height="auto" alt="enter amount coloumn">
 
+ 
 <img src="media/example_raw_dataset.png"  width="300" height="auto" alt="show how the imported data would look like">
 
 
